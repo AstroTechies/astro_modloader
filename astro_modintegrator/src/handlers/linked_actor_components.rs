@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use unreal_asset::{
+use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportBaseTrait, ExportNormalTrait},
     flags::EObjectFlags,
@@ -18,16 +18,16 @@ use unreal_asset::{
     uproperty::UProperty,
     Asset, Import,
 };
-use unreal_modintegrator::{
+use unreal_modloader::unreal_modintegrator::{
     helpers::{game_to_absolute, get_asset},
     write_asset, IntegratorConfig,
 };
-use unreal_pak::PakFile;
+use unreal_modloader::unreal_pak::PakFile;
 use uuid::Uuid;
 
 use crate::{
     assets::{ACTOR_TEMPLATE_ASSET, ACTOR_TEMPLATE_EXPORT},
-    astro_integrator::AstroIntegratorConfig,
+    AstroIntegratorConfig,
 };
 
 #[allow(clippy::ptr_arg)]

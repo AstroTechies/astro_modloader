@@ -1,13 +1,21 @@
 use std::{collections::HashMap, io};
 
-use unreal_asset::ue4version::VER_UE4_23;
-use unreal_modintegrator::IntegratorConfig;
+use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
+use unreal_modloader::unreal_modintegrator::IntegratorConfig;
+
+pub mod assets;
+pub(crate) mod handlers;
 
 use crate::handlers::{
     biome_placement_modifiers, item_list_entries, linked_actor_components, mission_trailheads,
     persistent_actors,
 };
 
+pub use unreal_modloader;
+pub use unreal_modloader::unreal_asset;
+pub use unreal_modloader::unreal_modintegrator;
+pub use unreal_modloader::unreal_modmetadata;
+pub use unreal_modloader::unreal_pak;
 pub struct AstroIntegratorConfig;
 
 impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {

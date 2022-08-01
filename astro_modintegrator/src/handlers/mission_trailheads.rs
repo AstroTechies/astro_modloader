@@ -3,7 +3,7 @@ use std::{
     path::Path,
 };
 
-use unreal_asset::{
+use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
     properties::{object_property::ObjectProperty, Property},
@@ -12,8 +12,8 @@ use unreal_asset::{
     unreal_types::{FName, PackageIndex},
     Import,
 };
-use unreal_modintegrator::{helpers::get_asset, write_asset};
-use unreal_pak::PakFile;
+use unreal_modloader::unreal_modintegrator::{helpers::get_asset, write_asset};
+use unreal_modloader::unreal_pak::PakFile;
 
 use super::MAP_PATHS;
 

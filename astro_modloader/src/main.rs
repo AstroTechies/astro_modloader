@@ -4,18 +4,14 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use unreal_modintegrator::IntegratorConfig;
-use unreal_modloader::config::{GameConfig, InstallManager};
-use unreal_modloader::game_platform_managers::{
+use astro_modintegrator::unreal_modintegrator::IntegratorConfig;
+use astro_modintegrator::unreal_modloader::config::{GameConfig, InstallManager};
+use astro_modintegrator::unreal_modloader::game_platform_managers::{
     GetGameBuildTrait, MsStoreInstallManager, SteamInstallManager,
 };
-use unreal_modloader::version::GameBuild;
+use astro_modintegrator::unreal_modloader::version::GameBuild;
+use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
 
-mod astro_integrator;
-use astro_integrator::AstroIntegratorConfig;
-
-mod assets;
-mod handlers;
 mod logging;
 
 use log::info;
@@ -55,8 +51,8 @@ impl<T, E: std::error::Error> GameConfig<'static, AstroIntegratorConfig, T, E> f
 where
     AstroIntegratorConfig: IntegratorConfig<'static, T, E>,
 {
-    fn get_integrator_config(&self) -> &astro_integrator::AstroIntegratorConfig {
-        &astro_integrator::AstroIntegratorConfig
+    fn get_integrator_config(&self) -> &AstroIntegratorConfig {
+        &AstroIntegratorConfig
     }
 
     fn get_game_build(&self, install_path: &Path) -> Option<GameBuild> {

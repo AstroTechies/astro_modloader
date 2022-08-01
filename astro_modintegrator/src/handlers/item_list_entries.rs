@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use unreal_asset::{
+use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
     properties::{
@@ -16,13 +16,13 @@ use unreal_asset::{
     unreal_types::{FName, PackageIndex},
     Import,
 };
-use unreal_modintegrator::{
+use unreal_modloader::unreal_modintegrator::{
     helpers::{game_to_absolute, get_asset},
     write_asset, IntegratorConfig,
 };
-use unreal_pak::PakFile;
+use unreal_modloader::unreal_pak::PakFile;
 
-use crate::astro_integrator::AstroIntegratorConfig;
+use crate::AstroIntegratorConfig;
 
 #[allow(clippy::ptr_arg)]
 pub(crate) fn handle_item_list_entries(

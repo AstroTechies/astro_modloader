@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use unreal_asset::{
+use unreal_modloader::unreal_asset::{
     cast,
     exports::{normal_export::NormalExport, Export, ExportBaseTrait, ExportNormalTrait},
     properties::{
@@ -16,14 +16,14 @@ use unreal_asset::{
     unreal_types::{FName, PackageIndex},
     Asset, Import,
 };
-use unreal_modintegrator::{
+use unreal_modloader::unreal_modintegrator::{
     find_asset,
     helpers::{game_to_absolute, get_asset},
     read_asset, write_asset, IntegratorConfig,
 };
-use unreal_pak::PakFile;
+use unreal_modloader::unreal_pak::PakFile;
 
-use crate::astro_integrator::AstroIntegratorConfig;
+use crate::AstroIntegratorConfig;
 
 use super::MAP_PATHS;
 
