@@ -12,6 +12,7 @@ use astro_modintegrator::unreal_modloader::game_platform_managers::{
 };
 use astro_modintegrator::unreal_modloader::update_info::UpdateInfo;
 use astro_modintegrator::unreal_modloader::version::GameBuild;
+use astro_modintegrator::unreal_modloader::IconData;
 use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
 
 mod logging;
@@ -20,6 +21,8 @@ use autoupdater::apis::github::GithubApi;
 use autoupdater::apis::DownloadApiTrait;
 use autoupdater::cargo_crate_version;
 use log::info;
+
+use lazy_static::lazy_static;
 
 #[derive(Debug, Default)]
 struct SteamGetGameBuild {
@@ -133,6 +136,21 @@ where
     }
 }
 
+fn load_icon() -> IconData {
+    let data = include_bytes!("../assets/icon.ico");
+    let image = image::load_from_memory(data).unwrap().to_rgba8();
+
+    IconData {
+        data: image.to_vec(),
+        width: image.width(),
+        height: image.height(),
+    }
+}
+
+lazy_static! {
+    static ref RGB_DATA: IconData = load_icon();
+}
+
 fn main() {
     logging::init().unwrap();
 
@@ -140,5 +158,5 @@ fn main() {
 
     let config = AstroGameConfig;
 
-    unreal_modloader::run(config);
+    unreal_modloader::run(config, Some(RGB_DATA.clone()));
 }
