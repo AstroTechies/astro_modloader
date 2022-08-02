@@ -149,11 +149,8 @@ pub(crate) fn handle_persistent_actors(
             let actor_asset = match find_asset(mod_paks, &actor_asset_path) {
                 Some(index) => read_asset(&mut mod_paks[index], VER_UE4_23, &actor_asset_path)
                     .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?,
-                None => {
-                    let asset = read_asset(integrated_pak, VER_UE4_23, &actor_asset_path)
-                        .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
-                    asset
-                }
+                None => read_asset(integrated_pak, VER_UE4_23, &actor_asset_path)
+                    .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?,
             };
 
             let mut scs_location = None;
