@@ -6,14 +6,19 @@ use std::path::Path;
 
 use astro_modintegrator::unreal_modintegrator::IntegratorConfig;
 use astro_modintegrator::unreal_modloader::config::{GameConfig, InstallManager};
+use astro_modintegrator::unreal_modloader::error::ModLoaderError;
 use astro_modintegrator::unreal_modloader::game_platform_managers::{
     GetGameBuildTrait, MsStoreInstallManager, SteamInstallManager,
 };
+use astro_modintegrator::unreal_modloader::update_info::UpdateInfo;
 use astro_modintegrator::unreal_modloader::version::GameBuild;
 use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
 
 mod logging;
 
+use autoupdater::apis::github::GithubApi;
+use autoupdater::apis::DownloadApiTrait;
+use autoupdater::cargo_crate_version;
 use log::info;
 
 #[derive(Debug, Default)]
@@ -94,6 +99,37 @@ where
         );
 
         managers
+    }
+
+    fn get_newer_update(&self) -> Result<Option<UpdateInfo>, ModLoaderError> {
+        let mut api = GithubApi::new("AstroTechies", "astro_modloader");
+        api.current_version(cargo_crate_version!());
+
+        let download = api
+            .get_newer(&None)
+            .map_err(|e| ModLoaderError::other(e.to_string()))?;
+
+        if let Some(download) = download {
+            return Ok(Some(UpdateInfo::new(download.tag_name, download.body)));
+        }
+
+        Ok(None)
+    }
+
+    fn update_modloader(&self, callback: Box<dyn Fn(f32)>) -> Result<(), ModLoaderError> {
+        let mut api = GithubApi::new("AstroTechies", "astro_modloader");
+        api.current_version(cargo_crate_version!());
+
+        let download = api
+            .get_newer(&None)
+            .map_err(|e| ModLoaderError::other(e.to_string()))?;
+
+        if let Some(download) = download {
+            let asset = &download.assets[0];
+            api.download(asset, Some(callback))
+                .map_err(|e| ModLoaderError::other(e.to_string()))?;
+        }
+        Ok(())
     }
 }
 

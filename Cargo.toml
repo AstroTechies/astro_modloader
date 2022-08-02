@@ -1,5 +1,4 @@
 [workspace]
-authors = "AstroTechies"
 
 members = [
     "astro_modintegrator", "astro_modloader"
