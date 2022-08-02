@@ -1,7 +1,13 @@
 use std::{collections::HashMap, io};
 
+use serde_json::json;
+use serde_json::Map;
 use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
+use unreal_modloader::unreal_modintegrator::helpers::game_to_absolute;
+use unreal_modloader::unreal_modintegrator::BakedInstructions;
 use unreal_modloader::unreal_modintegrator::IntegratorConfig;
+
+use lazy_static::lazy_static;
 
 pub mod assets;
 pub(crate) mod handlers;
@@ -17,6 +23,27 @@ pub use unreal_modloader::unreal_modintegrator;
 pub use unreal_modloader::unreal_modmetadata;
 pub use unreal_modloader::unreal_pak;
 pub struct AstroIntegratorConfig;
+
+lazy_static! {
+    static ref FILE_REFS: HashMap<String, &'static [u8]> = HashMap::from([
+        (
+            game_to_absolute(
+                AstroIntegratorConfig::GAME_NAME,
+                "/Game/Integrator/NotificationActor.uasset"
+            )
+            .unwrap(),
+            assets::ALERT_MOD_NOTIFICATION_ACTOR_ASSET
+        ),
+        (
+            game_to_absolute(
+                AstroIntegratorConfig::GAME_NAME,
+                "/Game/Integrator/NotificationActor.uexp"
+            )
+            .unwrap(),
+            assets::ALERT_MOD_NOTIFICATION_ACTOR_EXPORT
+        ),
+    ]);
+}
 
 impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
     fn get_data(&self) -> &'data () {
@@ -44,7 +71,6 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
             &mut Vec<unreal_pak::PakFile>,
             &Vec<serde_json::Value>,
         ) -> Result<(), io::Error>;
-
         let mut handlers: std::collections::HashMap<String, Box<HandlerFn>> = HashMap::new();
 
         handlers.insert(
@@ -73,6 +99,16 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
         );
 
         handlers
+    }
+
+    fn get_instructions(&self) -> Option<BakedInstructions> {
+        let mut instructions = Map::new();
+        instructions.insert(
+            "persistent_actors".to_string(),
+            json!(["/Game/Integrator/NotificationActor"]),
+        );
+
+        Some(BakedInstructions::new(FILE_REFS.clone(), instructions))
     }
 
     const GAME_NAME: &'static str = "Astro";

@@ -145,10 +145,16 @@ pub(crate) fn handle_persistent_actors(
             let actor_asset_path =
                 game_to_absolute(AstroIntegratorConfig::GAME_NAME, &component_path_raw)
                     .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid actor path"))?;
-            let pak_index = find_asset(mod_paks, &actor_asset_path)
-                .ok_or_else(|| io::Error::new(ErrorKind::Other, "No such asset"))?;
-            let actor_asset = read_asset(&mut mod_paks[pak_index], VER_UE4_23, &actor_asset_path)
-                .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
+
+            let actor_asset = match find_asset(mod_paks, &actor_asset_path) {
+                Some(index) => read_asset(&mut mod_paks[index], VER_UE4_23, &actor_asset_path)
+                    .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?,
+                None => {
+                    let asset = read_asset(integrated_pak, VER_UE4_23, &actor_asset_path)
+                        .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
+                    asset
+                }
+            };
 
             let mut scs_location = None;
             for i in 0..actor_asset.exports.len() {
