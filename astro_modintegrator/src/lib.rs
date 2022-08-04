@@ -1,5 +1,7 @@
 use std::{collections::HashMap, io};
 
+use crate::unreal_modintegrator::bake_instructions;
+use handlers::MAP_PATHS;
 use serde_json::json;
 use serde_json::Map;
 use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
@@ -14,7 +16,6 @@ pub(crate) mod handlers;
 
 use crate::handlers::{
     biome_placement_modifiers, item_list_entries, linked_actor_components, mission_trailheads,
-    persistent_actors,
 };
 
 pub use unreal_modloader;
@@ -74,11 +75,6 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
         let mut handlers: std::collections::HashMap<String, Box<HandlerFn>> = HashMap::new();
 
         handlers.insert(
-            String::from("persistent_actors"),
-            Box::new(persistent_actors::handle_persistent_actors),
-        );
-
-        handlers.insert(
             String::from("mission_trailheads"),
             Box::new(mission_trailheads::handle_mission_trailheads),
         );
@@ -102,10 +98,9 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
     }
 
     fn get_instructions(&self) -> Option<BakedInstructions> {
-        let mut instructions = Map::new();
-        instructions.insert(
-            "persistent_actors".to_string(),
-            json!(["/Game/Integrator/NotificationActor"]),
+        let instructions = bake_instructions!(
+            "persistent_actors": ["/Game/Integrator/NotificationActor"],
+            "persistent_actor_maps": MAP_PATHS
         );
 
         Some(BakedInstructions::new(FILE_REFS.clone(), instructions))
