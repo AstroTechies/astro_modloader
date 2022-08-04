@@ -16,7 +16,7 @@ use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
 
 mod logging;
 
-use autoupdater::apis::github::GithubApi;
+use autoupdater::apis::github::{GithubApi, GithubRelease};
 use autoupdater::apis::DownloadApiTrait;
 use autoupdater::cargo_crate_version;
 use log::info;
@@ -67,6 +67,20 @@ fn load_icon() -> IconData {
 
 lazy_static! {
     static ref RGB_DATA: IconData = load_icon();
+}
+
+impl AstroGameConfig {
+    fn get_api(&self) -> GithubApi {
+        let mut api = GithubApi::new("AstroTechies", "astro_modloader");
+        api.current_version(cargo_crate_version!());
+        api.prerelease(true);
+        api
+    }
+
+    fn get_newer_release(&self, api: &GithubApi) -> Result<Option<GithubRelease>, ModLoaderError> {
+        api.get_newer(&None)
+            .map_err(|e| ModLoaderError::other(e.to_string()))
+    }
 }
 
 impl<T, E: std::error::Error> GameConfig<'static, AstroIntegratorConfig, T, E> for AstroGameConfig
@@ -120,13 +134,8 @@ where
     }
 
     fn get_newer_update(&self) -> Result<Option<UpdateInfo>, ModLoaderError> {
-        let mut api = GithubApi::new("AstroTechies", "astro_modloader");
-        api.current_version(cargo_crate_version!());
-        api.prerelease(true);
-
-        let download = api
-            .get_newer(&None)
-            .map_err(|e| ModLoaderError::other(e.to_string()))?;
+        let api = self.get_api();
+        let download = self.get_newer_release(&api)?;
 
         if let Some(download) = download {
             return Ok(Some(UpdateInfo::new(download.tag_name, download.body)));
@@ -136,13 +145,8 @@ where
     }
 
     fn update_modloader(&self, callback: Box<dyn Fn(f32)>) -> Result<(), ModLoaderError> {
-        let mut api = GithubApi::new("AstroTechies", "astro_modloader");
-        api.current_version(cargo_crate_version!());
-        api.prerelease(true);
-
-        let download = api
-            .get_newer(&None)
-            .map_err(|e| ModLoaderError::other(e.to_string()))?;
+        let api = self.get_api();
+        let download = self.get_newer_release(&api)?;
 
         if let Some(download) = download {
             let asset = &download.assets[0];
