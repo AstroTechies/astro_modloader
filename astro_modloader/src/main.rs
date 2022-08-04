@@ -138,6 +138,7 @@ where
     fn update_modloader(&self, callback: Box<dyn Fn(f32)>) -> Result<(), ModLoaderError> {
         let mut api = GithubApi::new("AstroTechies", "astro_modloader");
         api.current_version(cargo_crate_version!());
+        api.prerelease(true);
 
         let download = api
             .get_newer(&None)
