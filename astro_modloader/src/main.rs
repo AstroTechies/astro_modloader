@@ -159,5 +159,5 @@ fn main() {
 
     let config = AstroGameConfig;
 
-    unreal_modloader::run(config, Some(RGB_DATA.clone()));
+    unreal_modloader::run(config, Some(RGB_DATA.clone()), cargo_crate_version!());
 }
