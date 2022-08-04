@@ -29,7 +29,7 @@ pub(crate) fn handle_item_list_entries(
     _data: &(),
     integrated_pak: &mut PakFile,
     game_paks: &mut Vec<PakFile>,
-    _mod_paks: &mut Vec<PakFile>,
+    mod_paks: &mut Vec<PakFile>,
     item_list_entires_maps: &Vec<serde_json::Value>,
 ) -> Result<(), io::Error> {
     let mut new_items = HashMap::new();
@@ -66,7 +66,7 @@ pub(crate) fn handle_item_list_entries(
     for (asset_name, entries) in &new_items {
         let asset_name = game_to_absolute(AstroIntegratorConfig::GAME_NAME, asset_name)
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid asset name"))?;
-        let mut asset = get_asset(integrated_pak, game_paks, &asset_name, VER_UE4_23)?;
+        let mut asset = get_asset(integrated_pak, game_paks, mod_paks, &asset_name, VER_UE4_23)?;
 
         let mut item_types_property: HashMap<String, Vec<(usize, usize, String)>> = HashMap::new();
         for i in 0..asset.exports.len() {

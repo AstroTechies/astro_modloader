@@ -39,7 +39,7 @@ pub(crate) fn handle_biome_placement_modifiers(
     _data: &(),
     integrated_pak: &mut PakFile,
     game_paks: &mut Vec<PakFile>,
-    _: &mut Vec<PakFile>,
+    mod_paks: &mut Vec<PakFile>,
     placement_modifiers: &Vec<serde_json::Value>,
 ) -> Result<(), io::Error> {
     let mut biome_placement_modifiers = Vec::new();
@@ -55,7 +55,13 @@ pub(crate) fn handle_biome_placement_modifiers(
         if map_path == "Astro/Content/Maps/test/BasicSphereT2.umap" {
             continue;
         }
-        let mut asset = get_asset(integrated_pak, game_paks, &map_path.to_string(), VER_UE4_23)?;
+        let mut asset = get_asset(
+            integrated_pak,
+            game_paks,
+            mod_paks,
+            &map_path.to_string(),
+            VER_UE4_23,
+        )?;
 
         let mut voxel_exports = HashMap::new();
 

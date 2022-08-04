@@ -22,13 +22,14 @@ pub(crate) fn handle_mission_trailheads(
     _data: &(),
     integrated_pak: &mut PakFile,
     game_paks: &mut Vec<PakFile>,
-    _mod_paks: &mut Vec<PakFile>,
+    mod_paks: &mut Vec<PakFile>,
     trailhead_arrays: &Vec<serde_json::Value>,
 ) -> Result<(), io::Error> {
     for map_path in MAP_PATHS {
         let mut asset = get_asset(
             integrated_pak,
             game_paks,
+            mod_paks,
             &String::from(map_path),
             VER_UE4_23,
         )?;

@@ -35,7 +35,7 @@ pub(crate) fn handle_linked_actor_components(
     _data: &(),
     integrated_pak: &mut PakFile,
     game_paks: &mut Vec<PakFile>,
-    _mod_paks: &mut Vec<PakFile>,
+    mod_paks: &mut Vec<PakFile>,
     linked_actors_maps: &Vec<serde_json::Value>,
 ) -> Result<(), io::Error> {
     let mut actor_asset = Asset::new(
@@ -78,7 +78,7 @@ pub(crate) fn handle_linked_actor_components(
     for (name, components) in &new_components {
         let name = game_to_absolute(AstroIntegratorConfig::GAME_NAME, name)
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid asset name"))?;
-        let mut asset = get_asset(integrated_pak, game_paks, &name, VER_UE4_23)?;
+        let mut asset = get_asset(integrated_pak, game_paks, mod_paks, &name, VER_UE4_23)?;
 
         for component_path_raw in components {
             let mut actor_index = None;
