@@ -5,14 +5,13 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use astro_modintegrator::unreal_modintegrator::IntegratorConfig;
-use astro_modintegrator::unreal_modloader::config::{GameConfig, InstallManager};
+use astro_modintegrator::unreal_modloader::config::{GameConfig, IconData, InstallManager};
 use astro_modintegrator::unreal_modloader::error::ModLoaderError;
 use astro_modintegrator::unreal_modloader::game_platform_managers::{
     GetGameBuildTrait, MsStoreInstallManager, SteamInstallManager,
 };
 use astro_modintegrator::unreal_modloader::update_info::UpdateInfo;
 use astro_modintegrator::unreal_modloader::version::GameBuild;
-use astro_modintegrator::unreal_modloader::IconData;
 use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
 
 mod logging;
@@ -55,6 +54,21 @@ impl GetGameBuildTrait<SteamInstallManager> for SteamGetGameBuild {
 
 struct AstroGameConfig;
 
+fn load_icon() -> IconData {
+    let data = include_bytes!("../assets/icon.ico");
+    let image = image::load_from_memory(data).unwrap().to_rgba8();
+
+    IconData {
+        data: image.to_vec(),
+        width: image.width(),
+        height: image.height(),
+    }
+}
+
+lazy_static! {
+    static ref RGB_DATA: IconData = load_icon();
+}
+
 impl<T, E: std::error::Error> GameConfig<'static, AstroIntegratorConfig, T, E> for AstroGameConfig
 where
     AstroIntegratorConfig: IntegratorConfig<'static, T, E>,
@@ -78,6 +92,7 @@ where
 
     const WINDOW_TITLE: &'static str = "Astroneer Modloader";
     const CONFIG_DIR: &'static str = "AstroModLoader";
+    const CRATE_VERSION: &'static str = cargo_crate_version!();
 
     fn get_install_managers(
         &self,
@@ -135,21 +150,10 @@ where
         }
         Ok(())
     }
-}
 
-fn load_icon() -> IconData {
-    let data = include_bytes!("../assets/icon.ico");
-    let image = image::load_from_memory(data).unwrap().to_rgba8();
-
-    IconData {
-        data: image.to_vec(),
-        width: image.width(),
-        height: image.height(),
+    fn get_icon(&self) -> Option<IconData> {
+        Some(RGB_DATA.clone())
     }
-}
-
-lazy_static! {
-    static ref RGB_DATA: IconData = load_icon();
 }
 
 fn main() {
@@ -159,5 +163,5 @@ fn main() {
 
     let config = AstroGameConfig;
 
-    unreal_modloader::run(config, Some(RGB_DATA.clone()), cargo_crate_version!());
+    unreal_modloader::run(config);
 }
