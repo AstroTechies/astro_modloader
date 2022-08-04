@@ -2,8 +2,6 @@ use std::{collections::HashMap, io};
 
 use crate::unreal_modintegrator::bake_instructions;
 use handlers::MAP_PATHS;
-use serde_json::json;
-use serde_json::Map;
 use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
 use unreal_modloader::unreal_modintegrator::helpers::game_to_absolute;
 use unreal_modloader::unreal_modintegrator::BakedInstructions;
