@@ -7,9 +7,11 @@ use std::path::Path;
 use astro_modintegrator::unreal_modintegrator::IntegratorConfig;
 use astro_modintegrator::unreal_modloader::config::{GameConfig, IconData, InstallManager};
 use astro_modintegrator::unreal_modloader::error::ModLoaderError;
-use astro_modintegrator::unreal_modloader::game_platform_managers::{GetGameBuildTrait, SteamInstallManager, ProtonInstallManager};
 #[cfg(windows)]
 use astro_modintegrator::unreal_modloader::game_platform_managers::MsStoreInstallManager;
+use astro_modintegrator::unreal_modloader::game_platform_managers::{
+    GetGameBuildTrait, ProtonInstallManager, SteamInstallManager,
+};
 use astro_modintegrator::unreal_modloader::update_info::UpdateInfo;
 use astro_modintegrator::unreal_modloader::version::GameBuild;
 use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
@@ -143,7 +145,7 @@ where
         let mut managers: std::collections::BTreeMap<&'static str, Box<dyn InstallManager>> =
             BTreeMap::new();
 
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(windows)]
         managers.insert(
             "Steam",
             Box::new(SteamInstallManager::new(
@@ -152,6 +154,15 @@ where
                 Box::new(SteamGetGameBuild::default()),
             )),
         );
+        #[cfg(windows)]
+        managers.insert(
+            "Microsoft Store",
+            Box::new(MsStoreInstallManager::new(
+                "SystemEraSoftworks",
+                "ASTRONEER",
+            )),
+        );
+
         #[cfg(target_os = "linux")]
         managers.insert(
             "Steam (Proton)",
@@ -159,14 +170,6 @@ where
                 361420,
                 AstroIntegratorConfig::GAME_NAME,
                 Box::new(ProtonGetGameBuild::default()),
-            ))
-        );
-        #[cfg(windows)]
-        managers.insert(
-            "Microsoft Store",
-            Box::new(MsStoreInstallManager::new(
-                "SystemEraSoftworks",
-                "ASTRONEER",
             )),
         );
 
