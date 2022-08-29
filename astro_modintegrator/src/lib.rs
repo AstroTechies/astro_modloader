@@ -97,12 +97,6 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
     }
 
     fn get_instructions(&self) -> Option<BakedInstructions> {
-        // let instructions = bake_instructions!(
-        //     "persistent_actors": ["/Game/Integrator/NotificationActor"],
-        // "persistent_actor_maps": MAP_PATHS
-        // );
-
-        // Some(BakedInstructions::new(FILE_REFS.clone(), instructions))
         None
     }
 
@@ -112,6 +106,7 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
             mod_id: "CoreMod".to_string(),
             filename: "800-CoreMod-0.1.0_P.pak",
             is_core: true,
+            priority: 800,
         }
         .into()])
     }
