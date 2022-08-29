@@ -1,15 +1,16 @@
 use std::{collections::HashMap, io};
 
-use crate::unreal_modintegrator::bake_instructions;
-use handlers::MAP_PATHS;
+use crate::unreal_modintegrator::IntegratorMod;
 use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
 use unreal_modloader::unreal_modintegrator::helpers::game_to_absolute;
 use unreal_modloader::unreal_modintegrator::BakedInstructions;
+use unreal_modloader::unreal_modintegrator::BakedMod;
 use unreal_modloader::unreal_modintegrator::IntegratorConfig;
 
 use lazy_static::lazy_static;
 
 pub mod assets;
+pub(crate) mod baked;
 pub(crate) mod handlers;
 
 use crate::handlers::{
@@ -96,12 +97,23 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
     }
 
     fn get_instructions(&self) -> Option<BakedInstructions> {
-        let instructions = bake_instructions!(
-            "persistent_actors": ["/Game/Integrator/NotificationActor"],
-            "persistent_actor_maps": MAP_PATHS
-        );
+        // let instructions = bake_instructions!(
+        //     "persistent_actors": ["/Game/Integrator/NotificationActor"],
+        // "persistent_actor_maps": MAP_PATHS
+        // );
 
-        Some(BakedInstructions::new(FILE_REFS.clone(), instructions))
+        // Some(BakedInstructions::new(FILE_REFS.clone(), instructions))
+        None
+    }
+
+    fn get_baked_mods(&self) -> Vec<IntegratorMod<io::Error>> {
+        Vec::from([BakedMod {
+            data: baked::CORE_MOD,
+            mod_id: "CoreMod".to_string(),
+            filename: "800-CoreMod-0.1.0_P.pak",
+            is_core: true,
+        }
+        .into()])
     }
 
     const GAME_NAME: &'static str = "Astro";

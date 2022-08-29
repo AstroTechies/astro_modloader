@@ -5,7 +5,7 @@ version = "0.1.4"
 edition = "2021"
 
 [dependencies]
-unreal_modloader = { verison = "0.1.5", git = "https://github.com/AstroTechies/unrealmodding", features = ["ue4_23"] }
+unreal_modloader = { verison = "0.1.4", git = "https://github.com/AstroTechies/unrealmodding", features = ["ue4_23"] }
 serde_json = "1.0.82"
 serde = { version = "1.0.140", features = ["derive"] }
 log = "0.4.17"
@@ -13,3 +13,8 @@ colored = "2.0.0"
 lazy_static = "1.4.0"
 regex = "1.6.0"
 uuid = { version = "1.1.2", features = ["v4", "fast-rng"] }
+
+[build-dependencies]
+walkdir = "2.3.2"
+unreal_pak = { version = "0.1.0", git = "https://github.com/AstroTechies/unrealmodding" }
+

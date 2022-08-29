@@ -1,0 +1,17 @@
+{
+    "schema_version": 2,
+    "name": "CoreMod",
+    "mod_id": "CoreMod",
+    "version": "0.1.0",
+    "author": "AstroTechies",
+    "integrator": {
+        "persistent_actors": [
+            "/Game/Integrator/NotificationActor"
+        ],
+        "persistent_actor_maps": [
+            "Astro/Content/Maps/Staging_T2.umap",
+            "Astro/Content/Maps/Staging_T2_PackedPlanets_Switch.umap",
+            "Astro/Content/Maps/test/BasicSphereT2.umap"
+        ]
+    }
+}
