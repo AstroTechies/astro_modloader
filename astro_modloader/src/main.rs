@@ -114,7 +114,8 @@ impl AstroGameConfig {
     }
 }
 
-impl<T, E: std::error::Error> GameConfig<'static, AstroIntegratorConfig, T, E> for AstroGameConfig
+impl<T, E: std::error::Error + 'static> GameConfig<'static, AstroIntegratorConfig, T, E>
+    for AstroGameConfig
 where
     AstroIntegratorConfig: IntegratorConfig<'static, T, E>,
 {

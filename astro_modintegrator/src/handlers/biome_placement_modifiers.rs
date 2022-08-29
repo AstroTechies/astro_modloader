@@ -133,7 +133,7 @@ pub(crate) fn handle_biome_placement_modifiers(
             }
 
             let export_index = export_index.unwrap();
-            let export = (&mut asset.exports[*export_index])
+            let export = (asset.exports[*export_index])
                 .get_normal_export_mut()
                 .unwrap();
 
