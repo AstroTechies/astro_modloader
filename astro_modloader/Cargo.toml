@@ -1,11 +1,11 @@
 [package]
 name = "astro_modloader"
 authors = ["AstroTechies"]
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 
 [dependencies]
-astro_modintegrator = { version = "0.1.6", path = "../astro_modintegrator" }
+astro_modintegrator = { version = "0.1.7", path = "../astro_modintegrator" }
 image = "0.24.3"
 autoupdater = "0.1.7"
 serde_json = "1.0.82"
