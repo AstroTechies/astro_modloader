@@ -5,9 +5,8 @@ use lazy_static::lazy_static;
 
 use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
 use unreal_modloader::unreal_modintegrator::{
-    helpers::game_to_absolute, BakedInstructions, BakedMod, IntegratorConfig, IntegratorMod,
+    helpers::game_to_absolute, BakedMod, HandlerFn, IntegratorConfig, IntegratorMod,
 };
-use unreal_modloader::unreal_pak::PakFile;
 
 pub mod assets;
 pub(crate) mod baked;
@@ -45,28 +44,9 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
         &()
     }
 
-    fn get_handlers(
-        &self,
-    ) -> std::collections::HashMap<
-        String,
-        Box<
-            dyn FnMut(
-                &(),
-                &mut PakFile,
-                &mut Vec<PakFile>,
-                &mut Vec<PakFile>,
-                &Vec<serde_json::Value>,
-            ) -> Result<(), io::Error>,
-        >,
-    > {
-        type HandlerFn = dyn FnMut(
-            &(),
-            &mut PakFile,
-            &mut Vec<PakFile>,
-            &mut Vec<PakFile>,
-            &Vec<serde_json::Value>,
-        ) -> Result<(), io::Error>;
-        let mut handlers: std::collections::HashMap<String, Box<HandlerFn>> = HashMap::new();
+    fn get_handlers(&self) -> std::collections::HashMap<String, Box<HandlerFn<(), io::Error>>> {
+        let mut handlers: std::collections::HashMap<String, Box<HandlerFn<(), io::Error>>> =
+            HashMap::new();
 
         handlers.insert(
             String::from("mission_trailheads"),
@@ -89,10 +69,6 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
         );
 
         handlers
-    }
-
-    fn get_instructions(&self) -> Option<BakedInstructions> {
-        None
     }
 
     fn get_baked_mods(&self) -> Vec<IntegratorMod<io::Error>> {

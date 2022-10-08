@@ -125,10 +125,10 @@ impl AstroGameConfig {
     }
 }
 
-impl<T, E: std::error::Error + 'static> GameConfig<'static, AstroIntegratorConfig, T, E>
+impl<D, E: std::error::Error + 'static> GameConfig<'static, AstroIntegratorConfig, D, E>
     for AstroGameConfig
 where
-    AstroIntegratorConfig: IntegratorConfig<'static, T, E>,
+    AstroIntegratorConfig: IntegratorConfig<'static, D, E>,
 {
     fn get_integrator_config(&self) -> &AstroIntegratorConfig {
         &AstroIntegratorConfig
