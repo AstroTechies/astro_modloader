@@ -1,35 +1,42 @@
+// Don't show console window in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use unreal_modloader::unreal_modintegrator::IntegratorConfig;
-use unreal_modloader::config::{GameConfig, IconData, InstallManager};
-use unreal_modloader::error::ModLoaderError;
-#[cfg(windows)]
-use unreal_modloader::game_platform_managers::MsStoreInstallManager;
-use unreal_modloader::game_platform_managers::{
-    GetGameBuildTrait, ProtonInstallManager, SteamInstallManager,
+use autoupdater::{
+    apis::{
+        github::{GithubApi, GithubRelease},
+        DownloadApiTrait,
+    },
+    cargo_crate_version,
 };
-use unreal_modloader::update_info::UpdateInfo;
-use unreal_modloader::version::GameBuild;
+use lazy_static::lazy_static;
+use log::info;
+
+use unreal_modloader::unreal_modintegrator::IntegratorConfig;
+use unreal_modloader::{
+    config::{GameConfig, IconData, InstallManager},
+    error::ModLoaderError,
+    game_platform_managers::GetGameBuildTrait,
+    update_info::UpdateInfo,
+    version::GameBuild,
+};
+
 use astro_modintegrator::AstroIntegratorConfig;
 
 mod logging;
 
-use autoupdater::apis::github::{GithubApi, GithubRelease};
-use autoupdater::apis::DownloadApiTrait;
-use autoupdater::cargo_crate_version;
-use log::info;
-
-use lazy_static::lazy_static;
-
+#[cfg(windows)]
 #[derive(Debug, Default)]
 struct SteamGetGameBuild {
     game_build: RefCell<Option<GameBuild>>,
 }
 
+#[cfg(windows)]
+use unreal_modloader::game_platform_managers::{MsStoreInstallManager, SteamInstallManager};
+#[cfg(windows)]
 impl GetGameBuildTrait<SteamInstallManager> for SteamGetGameBuild {
     fn get_game_build(&self, manager: &SteamInstallManager) -> Option<GameBuild> {
         if self.game_build.borrow().is_none() && manager.get_game_install_path().is_some() {
@@ -54,11 +61,15 @@ impl GetGameBuildTrait<SteamInstallManager> for SteamGetGameBuild {
     }
 }
 
+#[cfg(target_os = "linux")]
 #[derive(Debug, Default)]
 struct ProtonGetGameBuild {
     game_build: RefCell<Option<GameBuild>>,
 }
 
+#[cfg(target_os = "linux")]
+use unreal_modloader::game_platform_managers::ProtonInstallManager;
+#[cfg(target_os = "linux")]
 impl GetGameBuildTrait<ProtonInstallManager> for ProtonGetGameBuild {
     fn get_game_build(&self, manager: &ProtonInstallManager) -> Option<GameBuild> {
         if self.game_build.borrow().is_none() && manager.get_game_install_path().is_some() {

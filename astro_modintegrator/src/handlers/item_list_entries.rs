@@ -1,8 +1,6 @@
-use std::{
-    collections::HashMap,
-    io::{self, ErrorKind},
-    path::Path,
-};
+use std::collections::HashMap;
+use std::io::{self, ErrorKind};
+use std::path::Path;
 
 use unreal_modloader::unreal_asset::{
     cast,
