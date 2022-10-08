@@ -1,13 +1,13 @@
-use std::{collections::HashMap, io};
-
-use crate::unreal_modintegrator::IntegratorMod;
-use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
-use unreal_modloader::unreal_modintegrator::helpers::game_to_absolute;
-use unreal_modloader::unreal_modintegrator::BakedInstructions;
-use unreal_modloader::unreal_modintegrator::BakedMod;
-use unreal_modloader::unreal_modintegrator::IntegratorConfig;
+use std::collections::HashMap;
+use std::io;
 
 use lazy_static::lazy_static;
+
+use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
+use unreal_modloader::unreal_modintegrator::{
+    helpers::game_to_absolute, BakedInstructions, BakedMod, IntegratorConfig, IntegratorMod,
+};
+use unreal_modloader::unreal_pak::PakFile;
 
 pub mod assets;
 pub(crate) mod baked;
@@ -17,11 +17,6 @@ use crate::handlers::{
     biome_placement_modifiers, item_list_entries, linked_actor_components, mission_trailheads,
 };
 
-pub use unreal_modloader;
-pub use unreal_modloader::unreal_asset;
-pub use unreal_modloader::unreal_modintegrator;
-pub use unreal_modloader::unreal_modmetadata;
-pub use unreal_modloader::unreal_pak;
 pub struct AstroIntegratorConfig;
 
 lazy_static! {
@@ -57,18 +52,18 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
         Box<
             dyn FnMut(
                 &(),
-                &mut unreal_pak::PakFile,
-                &mut Vec<unreal_pak::PakFile>,
-                &mut Vec<unreal_pak::PakFile>,
+                &mut PakFile,
+                &mut Vec<PakFile>,
+                &mut Vec<PakFile>,
                 &Vec<serde_json::Value>,
             ) -> Result<(), io::Error>,
         >,
     > {
         type HandlerFn = dyn FnMut(
             &(),
-            &mut unreal_pak::PakFile,
-            &mut Vec<unreal_pak::PakFile>,
-            &mut Vec<unreal_pak::PakFile>,
+            &mut PakFile,
+            &mut Vec<PakFile>,
+            &mut Vec<PakFile>,
             &Vec<serde_json::Value>,
         ) -> Result<(), io::Error>;
         let mut handlers: std::collections::HashMap<String, Box<HandlerFn>> = HashMap::new();

@@ -1,20 +1,23 @@
 [package]
 name = "astro_modloader"
-authors = ["AstroTechies"]
-version = "0.1.8"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
 edition = "2021"
 
 [dependencies]
-astro_modintegrator = { version = "0.1.7", path = "../astro_modintegrator" }
-image = "0.24.3"
-autoupdater = "0.1.7"
-serde_json = "1.0.82"
-serde = { version = "1.0.140", features = ["derive"] }
-log = "0.4.17"
+astro_modintegrator.workspace = true
+
+unreal_modloader.workspace = true
+
+autoupdater = "0.2.1"
 colored = "2.0.0"
-lazy_static = "1.4.0"
-regex = "1.6.0"
-uuid = { version = "1.1.2", features = ["v4", "fast-rng"] }
+image = "0.24.3"
+lazy_static.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+regex.workspace = true
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1.12"

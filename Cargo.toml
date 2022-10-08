@@ -1,8 +1,23 @@
 [workspace]
-
 members = [
     "astro_modintegrator", "astro_modloader"
 ]
+
+[workspace.package]
+version = "0.1.9"
+authors = ["AstroTechies, localcc, konsti219"]
+description = "Astroneer Modloader"
+
+[workspace.dependencies]
+astro_modintegrator = { path = "./astro_modintegrator" }
+
+unreal_modloader = { verison = "0.1.9", git = "https://github.com/AstroTechies/unrealmodding", features = ["ue4_23"] }
+
+lazy_static = "1.4.0"
+log = "0.4.17"
+regex = "1.6.0"
+serde_json = "1.0.85"
+serde = { version = "1.0.145", features = ["derive"] }
 
 [profile.release]
 opt-level = 3

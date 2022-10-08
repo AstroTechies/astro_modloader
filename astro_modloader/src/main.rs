@@ -4,17 +4,17 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use astro_modintegrator::unreal_modintegrator::IntegratorConfig;
-use astro_modintegrator::unreal_modloader::config::{GameConfig, IconData, InstallManager};
-use astro_modintegrator::unreal_modloader::error::ModLoaderError;
+use unreal_modloader::unreal_modintegrator::IntegratorConfig;
+use unreal_modloader::config::{GameConfig, IconData, InstallManager};
+use unreal_modloader::error::ModLoaderError;
 #[cfg(windows)]
-use astro_modintegrator::unreal_modloader::game_platform_managers::MsStoreInstallManager;
-use astro_modintegrator::unreal_modloader::game_platform_managers::{
+use unreal_modloader::game_platform_managers::MsStoreInstallManager;
+use unreal_modloader::game_platform_managers::{
     GetGameBuildTrait, ProtonInstallManager, SteamInstallManager,
 };
-use astro_modintegrator::unreal_modloader::update_info::UpdateInfo;
-use astro_modintegrator::unreal_modloader::version::GameBuild;
-use astro_modintegrator::{unreal_modloader, AstroIntegratorConfig};
+use unreal_modloader::update_info::UpdateInfo;
+use unreal_modloader::version::GameBuild;
+use astro_modintegrator::AstroIntegratorConfig;
 
 mod logging;
 
