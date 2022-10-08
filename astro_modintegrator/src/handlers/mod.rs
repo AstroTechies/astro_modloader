@@ -1,5 +1,4 @@
 use lazy_static::lazy_static;
-
 use regex::Regex;
 
 pub(crate) mod biome_placement_modifiers;

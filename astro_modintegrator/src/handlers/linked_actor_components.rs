@@ -1,8 +1,8 @@
-use std::{
-    collections::HashMap,
-    io::{self, ErrorKind},
-    path::Path,
-};
+use std::collections::HashMap;
+use std::io::{self, ErrorKind};
+use std::path::Path;
+
+use uuid::Uuid;
 
 use unreal_modloader::unreal_asset::{
     cast,
@@ -23,12 +23,9 @@ use unreal_modloader::unreal_modintegrator::{
     write_asset, IntegratorConfig,
 };
 use unreal_modloader::unreal_pak::PakFile;
-use uuid::Uuid;
 
-use crate::{
-    assets::{ACTOR_TEMPLATE_ASSET, ACTOR_TEMPLATE_EXPORT},
-    AstroIntegratorConfig,
-};
+use crate::assets::{ACTOR_TEMPLATE_ASSET, ACTOR_TEMPLATE_EXPORT};
+use crate::AstroIntegratorConfig;
 
 #[allow(clippy::ptr_arg)]
 pub(crate) fn handle_linked_actor_components(
