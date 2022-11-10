@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-use std::io;
 
 use lazy_static::lazy_static;
 
 use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
 use unreal_modloader::unreal_modintegrator::{
-    helpers::game_to_absolute, BakedMod, HandlerFn, IntegratorConfig, IntegratorMod,
+    helpers::game_to_absolute, BakedMod, Error, HandlerFn, IntegratorConfig, IntegratorMod,
 };
 
 pub mod assets;
@@ -39,13 +38,13 @@ lazy_static! {
     ]);
 }
 
-impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
+impl<'data> IntegratorConfig<'data, (), Error> for AstroIntegratorConfig {
     fn get_data(&self) -> &'data () {
         &()
     }
 
-    fn get_handlers(&self) -> std::collections::HashMap<String, Box<HandlerFn<(), io::Error>>> {
-        let mut handlers: std::collections::HashMap<String, Box<HandlerFn<(), io::Error>>> =
+    fn get_handlers(&self) -> std::collections::HashMap<String, Box<HandlerFn<(), Error>>> {
+        let mut handlers: std::collections::HashMap<String, Box<HandlerFn<(), Error>>> =
             HashMap::new();
 
         handlers.insert(
@@ -71,7 +70,7 @@ impl<'data> IntegratorConfig<'data, (), io::Error> for AstroIntegratorConfig {
         handlers
     }
 
-    fn get_baked_mods(&self) -> Vec<IntegratorMod<io::Error>> {
+    fn get_baked_mods(&self) -> Vec<IntegratorMod<Error>> {
         Vec::from([BakedMod {
             data: baked::CORE_MOD,
             mod_id: "CoreMod".to_string(),

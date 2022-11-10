@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
@@ -15,21 +16,21 @@ use unreal_modloader::unreal_asset::{
     Import,
 };
 use unreal_modloader::unreal_modintegrator::{
-    helpers::{game_to_absolute, get_asset},
-    write_asset, IntegratorConfig,
+    helpers::{game_to_absolute, get_asset, write_asset},
+    Error, IntegratorConfig,
 };
-use unreal_modloader::unreal_pak::PakFile;
+use unreal_modloader::unreal_pak::{PakMemory, PakReader};
 
 use crate::AstroIntegratorConfig;
 
 #[allow(clippy::ptr_arg)]
 pub(crate) fn handle_item_list_entries(
     _data: &(),
-    integrated_pak: &mut PakFile,
-    game_paks: &mut Vec<PakFile>,
-    mod_paks: &mut Vec<PakFile>,
+    integrated_pak: &mut PakMemory,
+    game_paks: &mut Vec<PakReader<File>>,
+    mod_paks: &mut Vec<PakReader<File>>,
     item_list_entires_maps: &Vec<serde_json::Value>,
-) -> Result<(), io::Error> {
+) -> Result<(), Error> {
     let mut new_items = HashMap::new();
 
     for item_list_entries_map in item_list_entires_maps {

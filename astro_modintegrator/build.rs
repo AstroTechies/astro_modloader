@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use unreal_modloader::unreal_pak::{pakversion::PakVersion, PakFile, PakRecord};
+use unreal_modloader::unreal_pak::{pakversion::PakVersion, CompressionMethod, PakWriter};
 use walkdir::WalkDir;
 
 fn add_extension(path: &mut PathBuf, extension: &str) {
@@ -47,25 +47,22 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let file = OpenOptions::new().append(true).open(pak_path)?;
 
-        let mut pak = PakFile::writer(PakVersion::PakFileVersionFnameBasedCompressionMethod, &file);
+        let mut pak = PakWriter::new(
+            &file,
+            PakVersion::PakFileVersionFnameBasedCompressionMethod,
+            CompressionMethod::default(),
+        );
 
         for entry in WalkDir::new(&path).into_iter().map(|e| e.unwrap()) {
             if entry.file_type().is_file() {
                 let rel_path = entry.path().strip_prefix(&path).unwrap();
                 let record_name = rel_path.to_str().unwrap().replace('\\', "/");
 
-                let file_data = fs::read(entry.path()).unwrap();
-                let record = PakRecord::new(
-                    record_name,
-                    file_data,
-                    unreal_modloader::unreal_pak::CompressionMethod::Zlib,
-                )?;
-
-                pak.add_record(record)?;
+                pak.write_entry(&record_name, &fs::read(entry.path()).unwrap())?;
             }
         }
 
-        pak.write()?;
+        pak.finish_write()?;
     }
 
     Ok(())

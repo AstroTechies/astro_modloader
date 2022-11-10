@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
@@ -19,10 +20,10 @@ use unreal_modloader::unreal_asset::{
     Asset, Import,
 };
 use unreal_modloader::unreal_modintegrator::{
-    helpers::{game_to_absolute, get_asset},
-    write_asset, IntegratorConfig,
+    helpers::{game_to_absolute, get_asset, write_asset},
+    Error, IntegratorConfig,
 };
-use unreal_modloader::unreal_pak::PakFile;
+use unreal_modloader::unreal_pak::{PakMemory, PakReader};
 
 use crate::assets::{ACTOR_TEMPLATE_ASSET, ACTOR_TEMPLATE_EXPORT};
 use crate::AstroIntegratorConfig;
@@ -30,11 +31,11 @@ use crate::AstroIntegratorConfig;
 #[allow(clippy::ptr_arg)]
 pub(crate) fn handle_linked_actor_components(
     _data: &(),
-    integrated_pak: &mut PakFile,
-    game_paks: &mut Vec<PakFile>,
-    mod_paks: &mut Vec<PakFile>,
+    integrated_pak: &mut PakMemory,
+    game_paks: &mut Vec<PakReader<File>>,
+    mod_paks: &mut Vec<PakReader<File>>,
     linked_actors_maps: &Vec<serde_json::Value>,
-) -> Result<(), io::Error> {
+) -> Result<(), Error> {
     let mut actor_asset = Asset::new(
         ACTOR_TEMPLATE_ASSET.to_vec(),
         Some(ACTOR_TEMPLATE_EXPORT.to_vec()),

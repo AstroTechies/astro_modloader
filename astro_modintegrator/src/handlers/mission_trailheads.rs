@@ -1,3 +1,4 @@
+use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
@@ -10,19 +11,22 @@ use unreal_modloader::unreal_asset::{
     unreal_types::{FName, PackageIndex},
     Import,
 };
-use unreal_modloader::unreal_modintegrator::{helpers::get_asset, write_asset};
-use unreal_modloader::unreal_pak::PakFile;
+use unreal_modloader::unreal_modintegrator::{
+    helpers::{get_asset, write_asset},
+    Error,
+};
+use unreal_modloader::unreal_pak::{PakMemory, PakReader};
 
 use super::MAP_PATHS;
 
 #[allow(clippy::ptr_arg)]
 pub(crate) fn handle_mission_trailheads(
     _data: &(),
-    integrated_pak: &mut PakFile,
-    game_paks: &mut Vec<PakFile>,
-    mod_paks: &mut Vec<PakFile>,
+    integrated_pak: &mut PakMemory,
+    game_paks: &mut Vec<PakReader<File>>,
+    mod_paks: &mut Vec<PakReader<File>>,
     trailhead_arrays: &Vec<serde_json::Value>,
-) -> Result<(), io::Error> {
+) -> Result<(), Error> {
     for map_path in MAP_PATHS {
         let mut asset = get_asset(
             integrated_pak,

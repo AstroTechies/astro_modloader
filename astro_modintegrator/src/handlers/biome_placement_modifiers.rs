@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
@@ -14,8 +15,11 @@ use unreal_modloader::unreal_asset::{
     unreal_types::{FName, PackageIndex},
     Import,
 };
-use unreal_modloader::unreal_modintegrator::{helpers::get_asset, write_asset};
-use unreal_modloader::unreal_pak::PakFile;
+use unreal_modloader::unreal_modintegrator::{
+    helpers::{get_asset, write_asset},
+    Error,
+};
+use unreal_modloader::unreal_pak::{PakMemory, PakReader};
 
 use super::MAP_PATHS;
 
@@ -37,11 +41,11 @@ struct PlacementModifier {
 #[allow(clippy::ptr_arg)]
 pub(crate) fn handle_biome_placement_modifiers(
     _data: &(),
-    integrated_pak: &mut PakFile,
-    game_paks: &mut Vec<PakFile>,
-    mod_paks: &mut Vec<PakFile>,
+    integrated_pak: &mut PakMemory,
+    game_paks: &mut Vec<PakReader<File>>,
+    mod_paks: &mut Vec<PakReader<File>>,
     placement_modifiers: &Vec<serde_json::Value>,
-) -> Result<(), io::Error> {
+) -> Result<(), Error> {
     let mut biome_placement_modifiers = Vec::new();
 
     for modifiers in placement_modifiers {
