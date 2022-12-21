@@ -163,7 +163,7 @@ where
             Box::new(SteamInstallManager::new(
                 361420,
                 AstroIntegratorConfig::GAME_NAME,
-                Box::new(SteamGetGameBuild::default()),
+                Box::<SteamGetGameBuild>::default(),
             )),
         );
         #[cfg(windows)]
