@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 
-use unreal_modloader::unreal_asset::ue4version::VER_UE4_23;
+use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_modintegrator::{
     helpers::game_to_absolute, BakedMod, Error, HandlerFn, IntegratorConfig, IntegratorMod,
 };
@@ -83,5 +83,5 @@ impl<'data> IntegratorConfig<'data, (), Error> for AstroIntegratorConfig {
 
     const GAME_NAME: &'static str = "Astro";
     const INTEGRATOR_VERSION: &'static str = "0.1.0";
-    const ENGINE_VERSION: i32 = VER_UE4_23;
+    const ENGINE_VERSION: EngineVersion = EngineVersion::VER_UE4_23;
 }

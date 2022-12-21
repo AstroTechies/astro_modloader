@@ -2,12 +2,12 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
+use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
     properties::{object_property::ObjectProperty, Property},
     reader::asset_trait::AssetTrait,
-    ue4version::VER_UE4_23,
     unreal_types::{FName, PackageIndex},
     Import,
 };
@@ -33,7 +33,7 @@ pub(crate) fn handle_mission_trailheads(
             game_paks,
             mod_paks,
             &String::from(map_path),
-            VER_UE4_23,
+            EngineVersion::VER_UE4_23,
         )?;
 
         let mut trailheads = Vec::new();
@@ -111,13 +111,13 @@ pub(crate) fn handle_mission_trailheads(
                 let mission_data_export = cast!(
                     Export,
                     NormalExport,
-                    &mut asset.exports[mission_data_export_index as usize]
+                    &mut asset.exports[mission_data_export_index]
                 )
                 .expect("Corrupted memory");
                 let mission_data_property = cast!(
                     Property,
                     ArrayProperty,
-                    &mut mission_data_export.properties[mission_data_property_index as usize]
+                    &mut mission_data_export.properties[mission_data_property_index]
                 )
                 .expect("Corrupted memory");
 

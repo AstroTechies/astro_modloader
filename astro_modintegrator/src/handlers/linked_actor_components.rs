@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
+use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use uuid::Uuid;
 
 use unreal_modloader::unreal_asset::{
@@ -14,7 +15,6 @@ use unreal_modloader::unreal_asset::{
         str_property::NameProperty, struct_property::StructProperty, Property, PropertyDataTrait,
     },
     reader::asset_trait::AssetTrait,
-    ue4version::VER_UE4_23,
     unreal_types::{FName, PackageIndex},
     uproperty::UProperty,
     Asset, Import,
@@ -40,7 +40,7 @@ pub(crate) fn handle_linked_actor_components(
         ACTOR_TEMPLATE_ASSET.to_vec(),
         Some(ACTOR_TEMPLATE_EXPORT.to_vec()),
     );
-    actor_asset.engine_version = VER_UE4_23;
+    actor_asset.set_engine_version(EngineVersion::VER_UE4_23);
     actor_asset
         .parse_data()
         .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
@@ -76,7 +76,13 @@ pub(crate) fn handle_linked_actor_components(
     for (name, components) in &new_components {
         let name = game_to_absolute(AstroIntegratorConfig::GAME_NAME, name)
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid asset name"))?;
-        let mut asset = get_asset(integrated_pak, game_paks, mod_paks, &name, VER_UE4_23)?;
+        let mut asset = get_asset(
+            integrated_pak,
+            game_paks,
+            mod_paks,
+            &name,
+            EngineVersion::VER_UE4_23,
+        )?;
 
         for component_path_raw in components {
             let mut actor_index = None;

@@ -3,6 +3,8 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
+use unreal_modloader::unreal_asset::engine_version::EngineVersion;
+use unreal_modloader::unreal_asset::properties::object_property::SoftObjectPath;
 use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
@@ -11,7 +13,6 @@ use unreal_modloader::unreal_asset::{
         Property,
     },
     reader::asset_trait::AssetTrait,
-    ue4version::VER_UE4_23,
     unreal_types::{FName, PackageIndex},
     Import,
 };
@@ -65,7 +66,13 @@ pub(crate) fn handle_item_list_entries(
     for (asset_name, entries) in &new_items {
         let asset_name = game_to_absolute(AstroIntegratorConfig::GAME_NAME, asset_name)
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid asset name"))?;
-        let mut asset = get_asset(integrated_pak, game_paks, mod_paks, &asset_name, VER_UE4_23)?;
+        let mut asset = get_asset(
+            integrated_pak,
+            game_paks,
+            mod_paks,
+            &asset_name,
+            EngineVersion::VER_UE4_23,
+        )?;
 
         let mut item_types_property: HashMap<String, Vec<(usize, usize, String)>> = HashMap::new();
         for i in 0..asset.exports.len() {
@@ -195,10 +202,8 @@ pub(crate) fn handle_item_list_entries(
                         }
                         "SoftObjectProperty" => {
                             asset.add_name_reference(real_name.clone(), false);
-                            asset.add_name_reference(
-                                real_name.clone() + "." + &soft_class_name,
-                                false,
-                            );
+
+                            let asset_path_name = asset.add_fname(&real_name);
 
                             let export =
                                 cast!(Export, NormalExport, &mut asset.exports[*export_index])
@@ -214,11 +219,10 @@ pub(crate) fn handle_item_list_entries(
                                     name: property.name.clone(),
                                     property_guid: None,
                                     duplication_index: 0,
-                                    value: FName::new(
-                                        real_name.clone() + "." + &soft_class_name,
-                                        0,
-                                    ),
-                                    id: 0,
+                                    value: SoftObjectPath {
+                                        asset_path_name,
+                                        sub_path_string: Some(soft_class_name.clone()),
+                                    },
                                 }
                                 .into(),
                             );
