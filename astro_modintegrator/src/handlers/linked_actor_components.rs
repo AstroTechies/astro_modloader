@@ -4,6 +4,7 @@ use std::io::{self, ErrorKind};
 use std::path::Path;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
+use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
 use uuid::Uuid;
 
 use unreal_modloader::unreal_asset::{
@@ -15,7 +16,6 @@ use unreal_modloader::unreal_asset::{
         str_property::NameProperty, struct_property::StructProperty, Property, PropertyDataTrait,
     },
     reader::asset_trait::AssetTrait,
-    unreal_types::{FName, PackageIndex},
     uproperty::UProperty,
     Asset, Import,
 };

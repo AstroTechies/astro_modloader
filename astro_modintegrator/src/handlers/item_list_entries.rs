@@ -5,6 +5,7 @@ use std::path::Path;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_asset::properties::object_property::SoftObjectPath;
+use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
 use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
@@ -13,7 +14,6 @@ use unreal_modloader::unreal_asset::{
         Property,
     },
     reader::asset_trait::AssetTrait,
-    unreal_types::{FName, PackageIndex},
     Import,
 };
 use unreal_modloader::unreal_modintegrator::{

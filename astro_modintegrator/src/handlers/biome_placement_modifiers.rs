@@ -7,12 +7,12 @@ use log::warn;
 use serde::{Deserialize, Serialize};
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
+use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
 use unreal_modloader::unreal_asset::{
     cast,
     exports::ExportNormalTrait,
     properties::{object_property::ObjectProperty, Property, PropertyDataTrait},
     reader::asset_trait::AssetTrait,
-    unreal_types::{FName, PackageIndex},
     Import,
 };
 use unreal_modloader::unreal_modintegrator::{

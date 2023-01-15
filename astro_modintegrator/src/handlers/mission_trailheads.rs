@@ -3,12 +3,12 @@ use std::io::{self, ErrorKind};
 use std::path::Path;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
+use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
 use unreal_modloader::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
     properties::{object_property::ObjectProperty, Property},
     reader::asset_trait::AssetTrait,
-    unreal_types::{FName, PackageIndex},
     Import,
 };
 use unreal_modloader::unreal_modintegrator::{
