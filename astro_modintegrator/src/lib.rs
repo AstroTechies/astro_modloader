@@ -82,6 +82,6 @@ impl<'data> IntegratorConfig<'data, (), Error> for AstroIntegratorConfig {
     }
 
     const GAME_NAME: &'static str = "Astro";
-    const INTEGRATOR_VERSION: &'static str = "0.1.0";
+    const INTEGRATOR_VERSION: &'static str = env!("CARGO_PKG_VERSION");
     const ENGINE_VERSION: EngineVersion = EngineVersion::VER_UE4_23;
 }

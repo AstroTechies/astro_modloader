@@ -1,7 +1,5 @@
 [workspace]
-members = [
-    "astro_modintegrator", "astro_modloader"
-]
+members = ["astro_modintegrator", "astro_modloader"]
 
 [workspace.package]
 version = "0.1.11"
@@ -11,7 +9,9 @@ description = "Astroneer Modloader"
 [workspace.dependencies]
 astro_modintegrator = { path = "./astro_modintegrator" }
 
-unreal_modloader = { version = "0.1.12", git = "https://github.com/AstroTechies/unrealmodding", features = ["ue4_23"] }
+unreal_modloader = { version = "0.1.12", git = "https://github.com/AstroTechies/unrealmodding", features = [
+    "ue4_23",
+] }
 
 lazy_static = "1.4.0"
 log = "0.4.17"
