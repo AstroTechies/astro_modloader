@@ -5,6 +5,7 @@ use std::path::Path;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
+use unreal_modloader::unreal_modmetadata::game_to_absolute;
 use uuid::Uuid;
 
 use unreal_modloader::unreal_asset::{
@@ -20,7 +21,7 @@ use unreal_modloader::unreal_asset::{
     Asset, Import,
 };
 use unreal_modloader::unreal_modintegrator::{
-    helpers::{game_to_absolute, get_asset, write_asset},
+    helpers::{get_asset, write_asset},
     Error, IntegratorConfig,
 };
 use unreal_modloader::unreal_pak::{PakMemory, PakReader};

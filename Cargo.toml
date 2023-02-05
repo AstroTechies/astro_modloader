@@ -10,7 +10,7 @@ description = "Astroneer Modloader"
 astro_modintegrator = { path = "./astro_modintegrator" }
 
 unreal_modloader = { version = "0.1.12", git = "https://github.com/AstroTechies/unrealmodding", features = [
-    "ue4_23",
+    "ue4_23", "cpp_loader"
 ] }
 
 lazy_static = "1.4.0"

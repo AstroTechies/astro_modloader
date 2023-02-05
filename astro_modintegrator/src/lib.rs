@@ -4,8 +4,9 @@ use lazy_static::lazy_static;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_modintegrator::{
-    helpers::game_to_absolute, BakedMod, Error, HandlerFn, IntegratorConfig, IntegratorMod,
+    BakedMod, Error, HandlerFn, IntegratorConfig, IntegratorMod,
 };
+use unreal_modloader::unreal_modmetadata::game_to_absolute;
 
 pub mod assets;
 pub(crate) mod baked;

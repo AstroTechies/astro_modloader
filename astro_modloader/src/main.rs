@@ -15,13 +15,16 @@ use autoupdater::{
 use lazy_static::lazy_static;
 use log::info;
 
-use unreal_modloader::unreal_modintegrator::IntegratorConfig;
 use unreal_modloader::{
     config::{GameConfig, IconData, InstallManager},
     error::ModLoaderError,
     game_platform_managers::GetGameBuildTrait,
+    unreal_cpp_bootstrapper::config::{FunctionInfo, FunctionInfoPatterns},
     update_info::UpdateInfo,
     version::GameBuild,
+};
+use unreal_modloader::{
+    unreal_cpp_bootstrapper::config::GameSettings, unreal_modintegrator::IntegratorConfig,
 };
 
 use astro_modintegrator::AstroIntegratorConfig;
@@ -214,6 +217,19 @@ where
 
     fn get_icon(&self) -> Option<IconData> {
         Some(RGB_DATA.clone())
+    }
+
+    fn get_cpp_loader_config() -> GameSettings {
+        GameSettings {
+            is_using_fchunked_fixed_uobject_array: true,
+            uses_fname_pool: true,
+            function_info_settings: Some(FunctionInfo::Patterns(FunctionInfoPatterns {
+                call_function_by_name_with_arguments: Some("41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC ? ? ? ? 44 0F 29 BC 24 ? ? ? ? 44 0F 29 B4 24 ? ? ? ? 44 0F 29 AC 24 ? ? ? ? 44 0F 29 A4 24 ? ? ? ? 44 0F 29 9C 24 ? ? ? ? 44 0F 29 94 24 ? ? ? ? 44 0F 29 8C 24 ? ? ? ? 44 0F 29 84 24 ? ? ? ? 0F 29 BC 24 ? ? ? ? 0F 29 B4 24 ? ? ? ? 48 8B 8C 24 ? ? ? ? 48 8B 94 24 ? ? ? ? 48 8B 84 24 ? ? ? ? 4C 8B 40 18 0F 28 3D".to_string()),
+                create_default_object: Some("48 8B C4 55 41 54 41 55 41 56 41 57 48 8D A8 ? ? ? ? 48 81 EC ? ? ? ? 48 C7 45 ? ? ? ? ? 48 89 58 10 48 89 70 18 48 89 78 20 48 8B 05 ? ? ? ? 48 33 C4 48 89 85 ? ? ? ? 48 8B F9 48 83 B9 ? ? ? ? ? 0F 85 ? ? ? ? 48 8B 59 40 45 33 FF 48 85 DB 74 2E B2 01 48 8B CB".to_string()),
+                ..Default::default()
+            })),
+            ..Default::default()
+        }
     }
 }
 
