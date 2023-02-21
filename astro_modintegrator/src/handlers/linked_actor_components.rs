@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, ErrorKind};
+use std::io::{self, Cursor, ErrorKind};
 use std::path::Path;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
@@ -38,8 +38,8 @@ pub(crate) fn handle_linked_actor_components(
     linked_actors_maps: &Vec<serde_json::Value>,
 ) -> Result<(), Error> {
     let mut actor_asset = Asset::new(
-        ACTOR_TEMPLATE_ASSET.to_vec(),
-        Some(ACTOR_TEMPLATE_EXPORT.to_vec()),
+        Cursor::new(ACTOR_TEMPLATE_ASSET.to_vec()),
+        Some(Cursor::new(ACTOR_TEMPLATE_EXPORT.to_vec())),
     );
     actor_asset.set_engine_version(EngineVersion::VER_UE4_23);
     actor_asset
