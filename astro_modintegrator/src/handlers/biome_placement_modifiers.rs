@@ -97,7 +97,7 @@ pub(crate) fn handle_biome_placement_modifiers(
                     .ok_or_else(|| {
                         io::Error::new(
                             ErrorKind::Other,
-                            format!("Invalid placement {}", placement_path),
+                            format!("Invalid placement {placement_path}"),
                         )
                     })?;
 
@@ -158,7 +158,7 @@ pub(crate) fn handle_biome_placement_modifiers(
             let biome_property_index = biome_property_index.ok_or_else(|| {
                 io::Error::new(
                     ErrorKind::Other,
-                    format!("Failed to find biome type {}", biome_property_name),
+                    format!("Failed to find biome type {biome_property_name}"),
                 )
             })?;
             let biome_property = cast!(

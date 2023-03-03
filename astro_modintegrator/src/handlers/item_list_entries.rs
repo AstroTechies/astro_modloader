@@ -16,11 +16,11 @@ use unreal_modloader::unreal_asset::{
     reader::asset_trait::AssetTrait,
     Import,
 };
+use unreal_modloader::unreal_helpers::game_to_absolute;
 use unreal_modloader::unreal_modintegrator::{
     helpers::{get_asset, write_asset},
     Error, IntegratorConfig,
 };
-use unreal_modloader::unreal_modmetadata::game_to_absolute;
 use unreal_modloader::unreal_pak::{PakMemory, PakReader};
 
 use crate::AstroIntegratorConfig;

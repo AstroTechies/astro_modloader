@@ -12,7 +12,7 @@ unreal_modloader.workspace = true
 
 autoupdater = "0.2.1"
 colored = "2.0.0"
-image = "0.24.3"
+image = "0.24.5"
 lazy_static.workspace = true
 log.workspace = true
 serde.workspace = true

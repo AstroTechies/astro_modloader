@@ -5,7 +5,7 @@ use std::path::Path;
 
 use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
-use unreal_modloader::unreal_modmetadata::game_to_absolute;
+use unreal_modloader::unreal_helpers::game_to_absolute;
 use uuid::Uuid;
 
 use unreal_modloader::unreal_asset::{

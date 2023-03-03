@@ -6,7 +6,7 @@ use unreal_modloader::unreal_asset::engine_version::EngineVersion;
 use unreal_modloader::unreal_modintegrator::{
     BakedMod, Error, HandlerFn, IntegratorConfig, IntegratorMod,
 };
-use unreal_modloader::unreal_modmetadata::game_to_absolute;
+use unreal_modloader::unreal_helpers::game_to_absolute;
 
 pub mod assets;
 pub(crate) mod baked;

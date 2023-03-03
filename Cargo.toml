@@ -10,14 +10,15 @@ description = "Astroneer Modloader"
 astro_modintegrator = { path = "./astro_modintegrator" }
 
 unreal_modloader = { version = "0.1.12", git = "https://github.com/AstroTechies/unrealmodding", features = [
-    "ue4_23", "cpp_loader"
+    "ue4_23",
+    "cpp_loader",
 ] }
 
 lazy_static = "1.4.0"
 log = "0.4.17"
-regex = "1.6.0"
-serde_json = "1.0.85"
-serde = { version = "1.0.145", features = ["derive"] }
+regex = "1.7.1"
+serde_json = "1.0.93"
+serde = { version = "1.0.152", features = ["derive"] }
 
 [profile.release]
 lto = true
