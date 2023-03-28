@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use unreal_modloader::unreal_pak::{pakversion::PakVersion, PakWriter};
+use unreal_mod_manager::unreal_pak::{pakversion::PakVersion, PakWriter};
 use walkdir::WalkDir;
 
 fn add_extension(path: &mut PathBuf, extension: &str) {

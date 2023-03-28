@@ -6,20 +6,20 @@ use std::path::Path;
 use log::warn;
 use serde::{Deserialize, Serialize};
 
-use unreal_modloader::unreal_asset::engine_version::EngineVersion;
-use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
-use unreal_modloader::unreal_asset::{
+use unreal_mod_manager::unreal_asset::engine_version::EngineVersion;
+use unreal_mod_manager::unreal_asset::types::{FName, PackageIndex};
+use unreal_mod_manager::unreal_asset::{
     cast,
     exports::ExportNormalTrait,
     properties::{object_property::ObjectProperty, Property, PropertyDataTrait},
     reader::asset_trait::AssetTrait,
     Import,
 };
-use unreal_modloader::unreal_modintegrator::{
+use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error,
 };
-use unreal_modloader::unreal_pak::{PakMemory, PakReader};
+use unreal_mod_manager::unreal_pak::{PakMemory, PakReader};
 
 use super::MAP_PATHS;
 

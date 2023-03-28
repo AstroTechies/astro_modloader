@@ -15,7 +15,7 @@ use autoupdater::{
 use lazy_static::lazy_static;
 use log::info;
 
-use unreal_modloader::{
+use unreal_mod_manager::{
     config::{GameConfig, IconData, InstallManager},
     error::ModLoaderError,
     game_platform_managers::GetGameBuildTrait,
@@ -23,11 +23,11 @@ use unreal_modloader::{
     update_info::UpdateInfo,
     version::GameBuild,
 };
-use unreal_modloader::{
-    unreal_cpp_bootstrapper::config::GameSettings, unreal_modintegrator::IntegratorConfig,
+use unreal_mod_manager::{
+    unreal_cpp_bootstrapper::config::GameSettings, unreal_mod_integrator::IntegratorConfig,
 };
 
-use astro_modintegrator::AstroIntegratorConfig;
+use astro_mod_integrator::AstroIntegratorConfig;
 
 mod logging;
 
@@ -38,7 +38,7 @@ struct SteamGetGameBuild {
 }
 
 #[cfg(windows)]
-use unreal_modloader::game_platform_managers::{MsStoreInstallManager, SteamInstallManager};
+use unreal_mod_manager::game_platform_managers::{MsStoreInstallManager, SteamInstallManager};
 #[cfg(windows)]
 impl GetGameBuildTrait<SteamInstallManager> for SteamGetGameBuild {
     fn get_game_build(&self, manager: &SteamInstallManager) -> Option<GameBuild> {
@@ -71,7 +71,7 @@ struct ProtonGetGameBuild {
 }
 
 #[cfg(target_os = "linux")]
-use unreal_modloader::game_platform_managers::ProtonInstallManager;
+use unreal_mod_manager::game_platform_managers::ProtonInstallManager;
 #[cfg(target_os = "linux")]
 impl GetGameBuildTrait<ProtonInstallManager> for ProtonGetGameBuild {
     fn get_game_build(&self, manager: &ProtonInstallManager) -> Option<GameBuild> {
@@ -240,5 +240,5 @@ fn main() {
 
     let config = AstroGameConfig;
 
-    unreal_modloader::run(config);
+    unreal_mod_manager::run(config);
 }

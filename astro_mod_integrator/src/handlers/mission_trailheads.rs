@@ -2,20 +2,20 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
-use unreal_modloader::unreal_asset::engine_version::EngineVersion;
-use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
-use unreal_modloader::unreal_asset::{
+use unreal_mod_manager::unreal_asset::engine_version::EngineVersion;
+use unreal_mod_manager::unreal_asset::types::{FName, PackageIndex};
+use unreal_mod_manager::unreal_asset::{
     cast,
     exports::{Export, ExportNormalTrait},
     properties::{object_property::ObjectProperty, Property},
     reader::asset_trait::AssetTrait,
     Import,
 };
-use unreal_modloader::unreal_modintegrator::{
+use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error,
 };
-use unreal_modloader::unreal_pak::{PakMemory, PakReader};
+use unreal_mod_manager::unreal_pak::{PakMemory, PakReader};
 
 use super::MAP_PATHS;
 

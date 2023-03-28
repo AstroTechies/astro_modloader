@@ -3,12 +3,12 @@ use std::fs::File;
 use std::io::{self, Cursor, ErrorKind};
 use std::path::Path;
 
-use unreal_modloader::unreal_asset::engine_version::EngineVersion;
-use unreal_modloader::unreal_asset::types::{FName, PackageIndex};
-use unreal_modloader::unreal_helpers::game_to_absolute;
+use unreal_mod_manager::unreal_asset::engine_version::EngineVersion;
+use unreal_mod_manager::unreal_asset::types::{FName, PackageIndex};
+use unreal_mod_manager::unreal_helpers::game_to_absolute;
 use uuid::Uuid;
 
-use unreal_modloader::unreal_asset::{
+use unreal_mod_manager::unreal_asset::{
     cast,
     exports::{Export, ExportBaseTrait, ExportNormalTrait},
     flags::EObjectFlags,
@@ -20,11 +20,11 @@ use unreal_modloader::unreal_asset::{
     uproperty::UProperty,
     Asset, Import,
 };
-use unreal_modloader::unreal_modintegrator::{
+use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error, IntegratorConfig,
 };
-use unreal_modloader::unreal_pak::{PakMemory, PakReader};
+use unreal_mod_manager::unreal_pak::{PakMemory, PakReader};
 
 use crate::assets::{ACTOR_TEMPLATE_ASSET, ACTOR_TEMPLATE_EXPORT};
 use crate::AstroIntegratorConfig;

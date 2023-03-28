@@ -1,12 +1,12 @@
 [package]
-name = "astro_modintegrator"
+name = "astro_mod_integrator"
 version.workspace = true
 authors.workspace = true
 description = "Integration for Astroneer Modloader"
 edition = "2021"
 
 [dependencies]
-unreal_modloader.workspace = true
+unreal_mod_manager.workspace = true
 
 lazy_static.workspace = true
 log.workspace = true
@@ -16,5 +16,5 @@ serde_json.workspace = true
 uuid = { version = "1.3.0", features = ["v4", "fast-rng"] }
 
 [build-dependencies]
-unreal_modloader.workspace = true
-walkdir = "2.3.2"
+unreal_mod_manager.workspace = true
+walkdir = "2.3.3"
