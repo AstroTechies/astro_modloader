@@ -153,6 +153,10 @@ where
     const WINDOW_TITLE: &'static str = "Astroneer Modloader";
     const CONFIG_DIR: &'static str = "AstroModLoader";
     const CRATE_VERSION: &'static str = cargo_crate_version!();
+    const ABOUT_TEXT: &'static str = concat!(
+        "# License information: \n",
+        include_str!(concat!(env!("OUT_DIR"), "/licenses.md"))
+    );
 
     fn get_install_managers(
         &self,
