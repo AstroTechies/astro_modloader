@@ -189,6 +189,7 @@ where
             Box::new(ProtonInstallManager::new(
                 361420,
                 AstroIntegratorConfig::GAME_NAME,
+                #[allow(clippy::box_default)]
                 Box::new(ProtonGetGameBuild::default()),
             )),
         );
