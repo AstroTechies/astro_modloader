@@ -3,17 +3,16 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
-use unreal_mod_manager::unreal_asset::engine_version::EngineVersion;
-use unreal_mod_manager::unreal_asset::properties::object_property::SoftObjectPath;
-use unreal_mod_manager::unreal_asset::types::{FName, PackageIndex};
 use unreal_mod_manager::unreal_asset::{
     cast,
+    engine_version::EngineVersion,
     exports::{Export, ExportNormalTrait},
     properties::{
-        object_property::{ObjectProperty, SoftObjectProperty},
+        object_property::{ObjectProperty, SoftObjectPath, SoftObjectProperty},
         Property,
     },
     reader::asset_trait::AssetTrait,
+    types::{FName, PackageIndex},
     Import,
 };
 use unreal_mod_manager::unreal_helpers::game_to_absolute;

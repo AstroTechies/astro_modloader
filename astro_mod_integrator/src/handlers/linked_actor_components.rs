@@ -3,13 +3,11 @@ use std::fs::File;
 use std::io::{self, Cursor, ErrorKind};
 use std::path::Path;
 
-use unreal_mod_manager::unreal_asset::engine_version::EngineVersion;
-use unreal_mod_manager::unreal_asset::types::{FName, PackageIndex};
-use unreal_mod_manager::unreal_helpers::game_to_absolute;
 use uuid::Uuid;
 
 use unreal_mod_manager::unreal_asset::{
     cast,
+    engine_version::EngineVersion,
     exports::{Export, ExportBaseTrait, ExportNormalTrait},
     flags::EObjectFlags,
     properties::{
@@ -17,9 +15,11 @@ use unreal_mod_manager::unreal_asset::{
         str_property::NameProperty, struct_property::StructProperty, Property, PropertyDataTrait,
     },
     reader::asset_trait::AssetTrait,
+    types::{FName, PackageIndex},
     uproperty::UProperty,
     Asset, Import,
 };
+use unreal_mod_manager::unreal_helpers::game_to_absolute;
 use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error, IntegratorConfig,
@@ -37,14 +37,12 @@ pub(crate) fn handle_linked_actor_components(
     mod_paks: &mut Vec<PakReader<File>>,
     linked_actors_maps: &Vec<serde_json::Value>,
 ) -> Result<(), Error> {
-    let mut actor_asset = Asset::new(
+    let actor_asset = Asset::new(
         Cursor::new(ACTOR_TEMPLATE_ASSET.to_vec()),
         Some(Cursor::new(ACTOR_TEMPLATE_EXPORT.to_vec())),
-    );
-    actor_asset.set_engine_version(EngineVersion::VER_UE4_23);
-    actor_asset
-        .parse_data()
-        .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
+        EngineVersion::VER_UE4_23,
+    )
+    .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
 
     let gen_variable =
         cast!(Export, NormalExport, &actor_asset.exports[0]).expect("Corrupted ActorTemplate");
