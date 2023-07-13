@@ -2,13 +2,14 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
+use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use unreal_mod_manager::unreal_asset::{
     cast,
     engine_version::EngineVersion,
     exports::{Export, ExportNormalTrait},
     properties::{object_property::ObjectProperty, Property},
-    reader::asset_trait::AssetTrait,
-    types::{FName, PackageIndex},
+    types::PackageIndex,
     Import,
 };
 use unreal_mod_manager::unreal_mod_integrator::{
@@ -52,22 +53,22 @@ pub(crate) fn handle_mission_trailheads(
         let mut mission_data_export_index = None;
         let mut mission_data_property_index = None;
 
-        for i in 0..asset.exports.len() {
-            let export = &asset.exports[i];
+        for i in 0..asset.asset_data.exports.len() {
+            let export = &asset.asset_data.exports[i];
             if let Some(normal_export) = export.get_normal_export() {
                 if normal_export.base_export.class_index.is_import() {
                     let import = asset
                         .get_import(normal_export.base_export.class_index)
                         .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid import"))?;
-                    if import.object_name.content == "AstroSettings" {
+                    if import.object_name.get_content() == "AstroSettings" {
                         for j in 0..normal_export.properties.len() {
                             let property = &normal_export.properties[j];
                             if let Some(array_property) = cast!(Property, ArrayProperty, property) {
-                                if array_property.name.content == "MissionData"
+                                if array_property.name.get_content() == "MissionData"
                                     && array_property
                                         .array_type
                                         .as_ref()
-                                        .map(|e| e.content == "ObjectProperty")
+                                        .map(|e| e.get_content() == "ObjectProperty")
                                         .unwrap_or(false)
                                 {
                                     mission_data_export_index = Some(i);
@@ -89,29 +90,29 @@ pub(crate) fn handle_mission_trailheads(
                     .file_stem()
                     .and_then(|e| e.to_str())
                     .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid trailhead"))?;
-                asset.add_fname(trailhead);
-                asset.add_fname(soft_class_name);
 
                 let package_link = Import {
-                    class_package: FName::from_slice("/Script/CoreUObject"),
-                    class_name: FName::from_slice("Package"),
+                    class_package: asset.add_fname("/Script/CoreUObject"),
+                    class_name: asset.add_fname("Package"),
                     outer_index: PackageIndex::new(0),
-                    object_name: FName::from_slice(trailhead),
+                    object_name: asset.add_fname(trailhead),
+                    optional: false,
                 };
                 let package_link = asset.add_import(package_link);
 
                 let mission_data_asset_link = Import {
-                    class_package: FName::from_slice("/Script/Astro"),
-                    class_name: FName::from_slice("AstroMissionDataAsset"),
+                    class_package: asset.add_fname("/Script/Astro"),
+                    class_name: asset.add_fname("AstroMissionDataAsset"),
                     outer_index: package_link,
-                    object_name: FName::from_slice(soft_class_name),
+                    object_name: asset.add_fname(soft_class_name),
+                    optional: false,
                 };
                 let mission_data_asset_link = asset.add_import(mission_data_asset_link);
 
                 let mission_data_export = cast!(
                     Export,
                     NormalExport,
-                    &mut asset.exports[mission_data_export_index]
+                    &mut asset.asset_data.exports[mission_data_export_index]
                 )
                 .expect("Corrupted memory");
                 let mission_data_property = cast!(
@@ -123,6 +124,7 @@ pub(crate) fn handle_mission_trailheads(
 
                 let property = ObjectProperty {
                     name: mission_data_property.name.clone(),
+                    ancestry: Ancestry::default(),
                     property_guid: Some([0u8; 16]),
                     duplication_index: 0,
                     value: mission_data_asset_link,

@@ -3,6 +3,9 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::path::Path;
 
+use unreal_mod_manager::unreal_asset::properties::object_property::TopLevelAssetPath;
+use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use unreal_mod_manager::unreal_asset::{
     cast,
     engine_version::EngineVersion,
@@ -11,8 +14,7 @@ use unreal_mod_manager::unreal_asset::{
         object_property::{ObjectProperty, SoftObjectPath, SoftObjectProperty},
         Property,
     },
-    reader::asset_trait::AssetTrait,
-    types::{FName, PackageIndex},
+    types::PackageIndex,
     Import,
 };
 use unreal_mod_manager::unreal_helpers::game_to_absolute;
@@ -75,8 +77,8 @@ pub(crate) fn handle_item_list_entries(
         )?;
 
         let mut item_types_property: HashMap<String, Vec<(usize, usize, String)>> = HashMap::new();
-        for i in 0..asset.exports.len() {
-            if let Some(normal_export) = asset.exports[i].get_normal_export() {
+        for i in 0..asset.asset_data.exports.len() {
+            if let Some(normal_export) = asset.asset_data.exports[i].get_normal_export() {
                 for j in 0..normal_export.properties.len() {
                     let property = &normal_export.properties[j];
                     for entry_name in entries.keys() {
@@ -89,7 +91,7 @@ pub(crate) fn handle_item_list_entries(
                             if normal_export.base_export.class_index.is_import() {
                                 if asset
                                     .get_import(normal_export.base_export.class_index)
-                                    .map(|e| e.object_name.content != export_name)
+                                    .map(|e| e.object_name.get_content() != export_name)
                                     .unwrap_or(true)
                                 {
                                     continue;
@@ -99,7 +101,7 @@ pub(crate) fn handle_item_list_entries(
                             }
                         }
                         if let Some(array_property) = cast!(Property, ArrayProperty, property) {
-                            if array_property.name.content == arr_name {
+                            if array_property.name.get_content() == arr_name {
                                 item_types_property
                                     .entry(entry_name.clone())
                                     .or_insert_with(Vec::new)
@@ -115,8 +117,7 @@ pub(crate) fn handle_item_list_entries(
                                                     "Invalid array_property",
                                                 )
                                             })?
-                                            .content
-                                            .clone(),
+                                            .get_content(),
                                     ));
                             }
                         }
@@ -161,29 +162,31 @@ pub(crate) fn handle_item_list_entries(
                     match array_type.as_str() {
                         "ObjectProperty" => {
                             if new_import.index == 0 {
-                                asset.add_name_reference(real_name.clone(), false);
-                                asset.add_name_reference(class_name.clone(), false);
-
                                 let inner_import = Import {
-                                    class_package: FName::from_slice("/Script/CoreUObject"),
-                                    class_name: FName::from_slice("Package"),
+                                    class_package: asset.add_fname("/Script/CoreUObject"),
+                                    class_name: asset.add_fname("Package"),
                                     outer_index: PackageIndex::new(0),
-                                    object_name: FName::new(real_name.clone(), 0),
+                                    object_name: asset.add_fname(&real_name),
+                                    optional: false,
                                 };
                                 let inner_import = asset.add_import(inner_import);
 
                                 let import = Import {
-                                    class_package: FName::from_slice("/Script/Engine"),
-                                    class_name: FName::from_slice("BlueprintGeneratedClass"),
+                                    class_package: asset.add_fname("/Script/Engine"),
+                                    class_name: asset.add_fname("BlueprintGeneratedClass"),
                                     outer_index: inner_import,
-                                    object_name: FName::new(class_name.clone(), 0),
+                                    object_name: asset.add_fname(&class_name),
+                                    optional: false,
                                 };
                                 new_import = asset.add_import(import);
                             }
 
-                            let export =
-                                cast!(Export, NormalExport, &mut asset.exports[*export_index])
-                                    .expect("Corrupted memory");
+                            let export = cast!(
+                                Export,
+                                NormalExport,
+                                &mut asset.asset_data.exports[*export_index]
+                            )
+                            .expect("Corrupted memory");
                             let property = cast!(
                                 Property,
                                 ArrayProperty,
@@ -193,6 +196,7 @@ pub(crate) fn handle_item_list_entries(
                             property.value.push(
                                 ObjectProperty {
                                     name: property.name.clone(),
+                                    ancestry: Ancestry::default(),
                                     property_guid: None,
                                     duplication_index: 0,
                                     value: new_import,
@@ -205,9 +209,12 @@ pub(crate) fn handle_item_list_entries(
 
                             let asset_path_name = asset.add_fname(&real_name);
 
-                            let export =
-                                cast!(Export, NormalExport, &mut asset.exports[*export_index])
-                                    .expect("Corrupted memory");
+                            let export = cast!(
+                                Export,
+                                NormalExport,
+                                &mut asset.asset_data.exports[*export_index]
+                            )
+                            .expect("Corrupted memory");
                             let property = cast!(
                                 Property,
                                 ArrayProperty,
@@ -217,10 +224,11 @@ pub(crate) fn handle_item_list_entries(
                             property.value.push(
                                 SoftObjectProperty {
                                     name: property.name.clone(),
+                                    ancestry: Ancestry::default(),
                                     property_guid: None,
                                     duplication_index: 0,
                                     value: SoftObjectPath {
-                                        asset_path_name,
+                                        asset_path: TopLevelAssetPath::new(None, asset_path_name),
                                         sub_path_string: Some(soft_class_name.clone()),
                                     },
                                 }

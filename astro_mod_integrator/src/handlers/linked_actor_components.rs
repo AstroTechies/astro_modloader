@@ -3,6 +3,8 @@ use std::fs::File;
 use std::io::{self, Cursor, ErrorKind};
 use std::path::Path;
 
+use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use uuid::Uuid;
 
 use unreal_mod_manager::unreal_asset::{
@@ -14,8 +16,7 @@ use unreal_mod_manager::unreal_asset::{
         guid_property::GuidProperty, int_property::BoolProperty, object_property::ObjectProperty,
         str_property::NameProperty, struct_property::StructProperty, Property, PropertyDataTrait,
     },
-    reader::asset_trait::AssetTrait,
-    types::{FName, PackageIndex},
+    types::PackageIndex,
     uproperty::UProperty,
     Asset, Import,
 };
@@ -44,12 +45,12 @@ pub(crate) fn handle_linked_actor_components(
     )
     .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
 
-    let gen_variable =
-        cast!(Export, NormalExport, &actor_asset.exports[0]).expect("Corrupted ActorTemplate");
-    let component_export =
-        cast!(Export, PropertyExport, &actor_asset.exports[1]).expect("Corrupted ActorTemplate");
-    let scs_export =
-        cast!(Export, NormalExport, &actor_asset.exports[2]).expect("Corrupted ActorTemplate");
+    let gen_variable = cast!(Export, NormalExport, &actor_asset.asset_data.exports[0])
+        .expect("Corrupted ActorTemplate");
+    let component_export = cast!(Export, PropertyExport, &actor_asset.asset_data.exports[1])
+        .expect("Corrupted ActorTemplate");
+    let scs_export = cast!(Export, NormalExport, &actor_asset.asset_data.exports[2])
+        .expect("Corrupted ActorTemplate");
 
     let mut new_components = HashMap::new();
 
@@ -87,25 +88,23 @@ pub(crate) fn handle_linked_actor_components(
             let mut actor_index = None;
             let mut simple_construction_script = None;
             let mut cdo_location = None;
-            for i in 0..asset.exports.len() {
-                let export = &asset.exports[i];
+            for i in 0..asset.asset_data.exports.len() {
+                let export = &asset.asset_data.exports[i];
                 if let Some(normal_export) = export.get_normal_export() {
                     if normal_export.base_export.class_index.is_import() {
                         let import = asset
                             .get_import(normal_export.base_export.class_index)
                             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Import not found"))?;
-                        match import.object_name.content.as_str() {
+                        match import.object_name.get_content().as_str() {
                             "BlueprintGeneratedClass" => actor_index = Some(i),
                             "SimpleConstructionScript" => simple_construction_script = Some(i),
                             _ => {}
                         }
                     }
-                    if (EObjectFlags::RF_CLASS_DEFAULT_OBJECT
-                        & EObjectFlags::from_bits(normal_export.base_export.object_flags)
-                            .ok_or_else(|| {
-                                io::Error::new(ErrorKind::Other, "Invalid object flags")
-                            })?)
-                        == EObjectFlags::RF_CLASS_DEFAULT_OBJECT
+                    if normal_export
+                        .base_export
+                        .object_flags
+                        .contains(EObjectFlags::RF_CLASS_DEFAULT_OBJECT)
                     {
                         cdo_location = Some(i);
                     }
@@ -121,36 +120,32 @@ pub(crate) fn handle_linked_actor_components(
             let cdo_location =
                 cdo_location.ok_or_else(|| io::Error::new(ErrorKind::Other, "CDO not found"))?;
 
+            let script_core_uobject = asset.add_fname("/Script/CoreUObject");
+            let name_class = asset.add_fname("Class");
+            let object_property = asset.add_fname("ObjectProperty");
+            let default_object_property = asset.add_fname("Default__ObjectProperty");
+            let name_scs_node = asset.add_fname("SCS_Node");
+            let script_engine = asset.add_fname("/Script/Engine");
+            let default_scs_node = asset.add_fname("Default__SCS_Node");
+
             let class_object_property_import = asset
-                .find_import_no_index(
-                    &FName::from_slice("/Script/CoreUObject"),
-                    &FName::from_slice("Class"),
-                    &FName::from_slice("ObjectProperty"),
-                )
+                .find_import_no_index(&script_core_uobject, &name_class, &object_property)
                 .expect("No class object property import");
 
             let default_object_property_import = asset
                 .find_import_no_index(
-                    &FName::from_slice("/Script/CoreUObject"),
-                    &FName::from_slice("ObjectProperty"),
-                    &FName::from_slice("Default__ObjectProperty"),
+                    &script_core_uobject,
+                    &object_property,
+                    &default_object_property,
                 )
                 .expect("No default objectproperty");
 
             let scs_node_import = asset
-                .find_import_no_index(
-                    &FName::from_slice("/Script/CoreUObject"),
-                    &FName::from_slice("Class"),
-                    &FName::from_slice("SCS_Node"),
-                )
+                .find_import_no_index(&script_core_uobject, &name_class, &name_scs_node)
                 .expect("No SCS_Node");
 
             let default_scs_node_import = asset
-                .find_import_no_index(
-                    &FName::from_slice("/Script/Engine"),
-                    &FName::from_slice("SCS_Node"),
-                    &FName::from_slice("Default__SCS_Node"),
-                )
+                .find_import_no_index(&script_engine, &name_scs_node, &default_scs_node)
                 .expect("No default scs");
 
             let component = Path::new(component_path_raw)
@@ -173,6 +168,7 @@ pub(crate) fn handle_linked_actor_components(
                 class_name: asset.add_fname("Package"),
                 outer_index: PackageIndex::new(0),
                 object_name: asset.add_fname(&component_path_raw),
+                optional: false,
             };
             let package_import = asset.add_import(package_import);
 
@@ -181,6 +177,7 @@ pub(crate) fn handle_linked_actor_components(
                 class_name: asset.add_fname("BlueprintGeneratedClass"),
                 outer_index: package_import,
                 object_name: asset.add_fname(&component_c),
+                optional: false,
             };
             let blueprint_generated_class_import =
                 asset.add_import(blueprint_generated_class_import);
@@ -190,6 +187,7 @@ pub(crate) fn handle_linked_actor_components(
                 class_name: asset.add_fname(&component_c),
                 outer_index: package_import,
                 object_name: asset.add_fname(&default_component),
+                optional: false,
             };
             let default_import = asset.add_import(default_import);
 
@@ -210,11 +208,15 @@ pub(crate) fn handle_linked_actor_components(
             component_base_export.template_index =
                 PackageIndex::new(default_object_property_import);
 
-            asset.exports.push(component_export.into());
+            asset.asset_data.exports.push(component_export.into());
 
-            let component_export_index = asset.exports.len() as i32;
-            let actor_export = cast!(Export, ClassExport, &mut asset.exports[actor_index])
-                .expect("Corrupted memory");
+            let component_export_index = asset.asset_data.exports.len() as i32;
+            let actor_export = cast!(
+                Export,
+                ClassExport,
+                &mut asset.asset_data.exports[actor_index]
+            )
+            .expect("Corrupted memory");
             actor_export
                 .struct_export
                 .children
@@ -246,14 +248,15 @@ pub(crate) fn handle_linked_actor_components(
             asset.add_fname("BoolProperty");
             component_gen_variable_normal_export.properties = Vec::from([BoolProperty {
                 name: asset.add_fname("bAutoActivate"),
+                ancestry: Ancestry::default(),
                 property_guid: Some([0u8; 16]),
                 duplication_index: 0,
                 value: true,
             }
             .into()]);
 
-            asset.exports.push(component_gen_variable.into());
-            let component_gen_variable_index = asset.exports.len() as i32;
+            asset.asset_data.exports.push(component_gen_variable.into());
+            let component_gen_variable_index = asset.asset_data.exports.len() as i32;
 
             let mut scs_node = scs_export.clone();
             let scs_node_normal_export = scs_node
@@ -262,6 +265,7 @@ pub(crate) fn handle_linked_actor_components(
             scs_node_normal_export.properties = Vec::from([
                 ObjectProperty {
                     name: asset.add_fname("ComponentClass"),
+                    ancestry: Ancestry::default(),
                     property_guid: Some([0u8; 16]),
                     duplication_index: 0,
                     value: blueprint_generated_class_import,
@@ -269,6 +273,7 @@ pub(crate) fn handle_linked_actor_components(
                 .into(),
                 ObjectProperty {
                     name: asset.add_fname("ComponentTemplate"),
+                    ancestry: Ancestry::default(),
                     property_guid: Some([0u8; 16]),
                     duplication_index: 0,
                     value: PackageIndex::new(component_gen_variable_index),
@@ -276,6 +281,7 @@ pub(crate) fn handle_linked_actor_components(
                 .into(),
                 StructProperty {
                     name: asset.add_fname("VariableGuid"),
+                    ancestry: Ancestry::default(),
                     struct_type: Some(asset.add_fname("Guid")),
                     struct_guid: Some([0u8; 16]),
                     property_guid: None,
@@ -283,6 +289,7 @@ pub(crate) fn handle_linked_actor_components(
                     serialize_none: true,
                     value: Vec::from([GuidProperty {
                         name: asset.add_fname("VariableGuid"),
+                        ancestry: Ancestry::default(),
                         property_guid: None,
                         duplication_index: 0,
                         value: Uuid::new_v4().into_bytes(),
@@ -292,6 +299,7 @@ pub(crate) fn handle_linked_actor_components(
                 .into(),
                 NameProperty {
                     name: asset.add_fname("InternalVariableName"),
+                    ancestry: Ancestry::default(),
                     property_guid: None,
                     duplication_index: 0,
                     value: asset.add_fname(component),
@@ -321,19 +329,21 @@ pub(crate) fn handle_linked_actor_components(
                 Vec::from([PackageIndex::new(simple_construction_script)]);
 
             let mut last_scs_node_index = 0;
-            for export in &asset.exports {
+            for export in &asset.asset_data.exports {
                 let object_name = &export.get_base_export().object_name;
-                if object_name.content == "SCS_Node" && last_scs_node_index < object_name.index {
-                    last_scs_node_index = object_name.index;
+                if object_name.get_content() == "SCS_Node"
+                    && last_scs_node_index < object_name.get_number()
+                {
+                    last_scs_node_index = object_name.get_number();
                 }
             }
             scs_node_normal_export.base_export.object_name =
-                FName::new("SCS_Node".to_string(), last_scs_node_index + 1);
+                asset.add_fname_with_number("SCS_Node", last_scs_node_index + 1);
 
-            asset.exports.push(scs_node.into());
-            let scs_node_index = asset.exports.len() as i32;
+            asset.asset_data.exports.push(scs_node.into());
+            let scs_node_index = asset.asset_data.exports.len() as i32;
 
-            let cdo_base_export = asset.exports[cdo_location].get_base_export_mut();
+            let cdo_base_export = asset.asset_data.exports[cdo_location].get_base_export_mut();
             cdo_base_export
                 .serialization_before_serialization_dependencies
                 .push(PackageIndex::new(scs_node_index));
@@ -341,7 +351,10 @@ pub(crate) fn handle_linked_actor_components(
                 .serialization_before_serialization_dependencies
                 .push(PackageIndex::new(component_gen_variable_index));
 
-            let simple_construction_script_export = asset.exports[simple_construction_script_index]
+            let mut name_map = asset.get_name_map();
+
+            let simple_construction_script_export = asset.asset_data.exports
+                [simple_construction_script_index]
                 .get_normal_export_mut()
                 .expect("Corrupted memory");
             simple_construction_script_export
@@ -351,19 +364,24 @@ pub(crate) fn handle_linked_actor_components(
 
             for property in &mut simple_construction_script_export.properties {
                 if let Some(array_property) = cast!(Property, ArrayProperty, property) {
-                    let name = array_property.name.content.as_str();
+                    let name = array_property.name.get_content();
+                    let name = name.as_str();
                     if name == "AllNodes" || name == "RootNodes" {
                         let mut last_index = 0;
                         for property in &array_property.value {
-                            let index = property.get_name().index;
+                            let index = property.get_name().get_number();
                             if last_index < index {
                                 last_index = index;
                             }
                         }
 
+                        let name = name_map
+                            .get_mut()
+                            .add_fname_with_number(&(last_index + 1).to_string(), -2147483648);
                         array_property.value.push(
                             ObjectProperty {
-                                name: FName::new((last_index + 1).to_string(), -2147483648),
+                                name,
+                                ancestry: Ancestry::default(),
                                 property_guid: None,
                                 duplication_index: 0,
                                 value: PackageIndex::new(scs_node_index),
