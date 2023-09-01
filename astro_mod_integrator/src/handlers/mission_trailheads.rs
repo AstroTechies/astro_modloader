@@ -1,8 +1,8 @@
 use std::fs::File;
-use std::io::{self, ErrorKind};
+use std::io::{self, BufReader, ErrorKind};
 use std::path::Path;
 
-use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::types::PackageIndexTrait;
 use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use unreal_mod_manager::unreal_asset::{
     cast,
@@ -12,6 +12,7 @@ use unreal_mod_manager::unreal_asset::{
     types::PackageIndex,
     Import,
 };
+use unreal_mod_manager::unreal_helpers::Guid;
 use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error,
@@ -24,8 +25,8 @@ use super::MAP_PATHS;
 pub(crate) fn handle_mission_trailheads(
     _data: &(),
     integrated_pak: &mut PakMemory,
-    game_paks: &mut Vec<PakReader<File>>,
-    mod_paks: &mut Vec<PakReader<File>>,
+    game_paks: &mut Vec<PakReader<BufReader<File>>>,
+    mod_paks: &mut Vec<PakReader<BufReader<File>>>,
     trailhead_arrays: &Vec<serde_json::Value>,
 ) -> Result<(), Error> {
     for map_path in MAP_PATHS {
@@ -60,15 +61,15 @@ pub(crate) fn handle_mission_trailheads(
                     let import = asset
                         .get_import(normal_export.base_export.class_index)
                         .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid import"))?;
-                    if import.object_name.get_content() == "AstroSettings" {
+                    if import.object_name.get_content(|e| e == "AstroSettings") {
                         for j in 0..normal_export.properties.len() {
                             let property = &normal_export.properties[j];
                             if let Some(array_property) = cast!(Property, ArrayProperty, property) {
-                                if array_property.name.get_content() == "MissionData"
+                                if array_property.name.get_content(|e| e == "MissionData")
                                     && array_property
                                         .array_type
                                         .as_ref()
-                                        .map(|e| e.get_content() == "ObjectProperty")
+                                        .map(|e| e.get_content(|e| e == "ObjectProperty"))
                                         .unwrap_or(false)
                                 {
                                     mission_data_export_index = Some(i);
@@ -125,7 +126,7 @@ pub(crate) fn handle_mission_trailheads(
                 let property = ObjectProperty {
                     name: mission_data_property.name.clone(),
                     ancestry: Ancestry::default(),
-                    property_guid: Some([0u8; 16]),
+                    property_guid: Some(Guid::default()),
                     duplication_index: 0,
                     value: mission_data_asset_link,
                 };

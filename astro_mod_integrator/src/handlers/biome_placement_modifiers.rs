@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, ErrorKind};
+use std::io::{self, BufReader, ErrorKind};
 use std::path::Path;
 
 use log::warn;
 use serde::{Deserialize, Serialize};
 
-use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::types::PackageIndexTrait;
 use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use unreal_mod_manager::unreal_asset::{
     cast,
@@ -16,6 +16,7 @@ use unreal_mod_manager::unreal_asset::{
     types::PackageIndex,
     Import,
 };
+use unreal_mod_manager::unreal_helpers::Guid;
 use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error,
@@ -43,8 +44,8 @@ struct PlacementModifier {
 pub(crate) fn handle_biome_placement_modifiers(
     _data: &(),
     integrated_pak: &mut PakMemory,
-    game_paks: &mut Vec<PakReader<File>>,
-    mod_paks: &mut Vec<PakReader<File>>,
+    game_paks: &mut Vec<PakReader<BufReader<File>>>,
+    mod_paks: &mut Vec<PakReader<BufReader<File>>>,
     placement_modifiers: &Vec<serde_json::Value>,
 ) -> Result<(), Error> {
     let mut biome_placement_modifiers = Vec::new();
@@ -79,12 +80,12 @@ pub(crate) fn handle_biome_placement_modifiers(
                         io::Error::new(ErrorKind::Other, "Corrupted game installation")
                     })?;
 
-                    if import.object_name.get_content() == "VoxelVolumeComponent"
-                        && normal_export.base_export.object_name.get_content()
+                    if import.object_name.get_owned_content() == "VoxelVolumeComponent"
+                        && normal_export.base_export.object_name.get_owned_content()
                             != "Default Voxel Volume"
                     {
                         voxel_exports
-                            .insert(normal_export.base_export.object_name.get_content(), i);
+                            .insert(normal_export.base_export.object_name.get_owned_content(), i);
                     }
                 }
             }
@@ -147,7 +148,10 @@ pub(crate) fn handle_biome_placement_modifiers(
             let mut biome_property_index = None;
             for i in 0..export.properties.len() {
                 let property = &export.properties[i];
-                if property.get_name().get_content() == biome_property_name {
+                if property
+                    .get_name()
+                    .get_content(|e| e == biome_property_name)
+                {
                     biome_property_index = Some(i);
                     break;
                 }
@@ -174,7 +178,7 @@ pub(crate) fn handle_biome_placement_modifiers(
                     e.value
                         .iter()
                         .filter_map(|e| cast!(Property, NameProperty, e))
-                        .any(|e| e.value.get_content() == modifier.biome_name)
+                        .any(|e| e.value.get_content(|e| e == modifier.biome_name))
                 })
                 .ok_or_else(|| {
                     io::Error::new(
@@ -186,7 +190,7 @@ pub(crate) fn handle_biome_placement_modifiers(
             let layers = biome
                 .value
                 .iter_mut()
-                .find(|e| e.get_name().get_content() == "Layers")
+                .find(|e| e.get_name().get_content(|e| e == "Layers"))
                 .and_then(|e| cast!(Property, ArrayProperty, e))
                 .ok_or_else(|| io::Error::new(ErrorKind::Other, "Corrupted game installation"))?;
 
@@ -198,7 +202,7 @@ pub(crate) fn handle_biome_placement_modifiers(
                     e.value
                         .iter()
                         .filter_map(|e| cast!(Property, NameProperty, e))
-                        .any(|e| e.value.get_content() == modifier.layer_name)
+                        .any(|e| e.value.get_content(|e| e == modifier.layer_name))
                 })
                 .ok_or_else(|| {
                     io::Error::new(
@@ -213,7 +217,10 @@ pub(crate) fn handle_biome_placement_modifiers(
             let object_placement_modifiers = layer
                 .value
                 .iter_mut()
-                .find(|e| e.get_name().get_content() == "ObjectPlacementModifiers")
+                .find(|e| {
+                    e.get_name()
+                        .get_content(|e| e == "ObjectPlacementModifiers")
+                })
                 .and_then(|e| cast!(Property, ArrayProperty, e))
                 .ok_or_else(|| {
                     io::Error::new(ErrorKind::Other, "Corrupted game installation".to_string())
@@ -225,7 +232,7 @@ pub(crate) fn handle_biome_placement_modifiers(
                         .get_mut()
                         .add_fname(&object_placement_modifiers.value.len().to_string()),
                     ancestry: Ancestry::default(),
-                    property_guid: Some([0u8; 16]),
+                    property_guid: Some(Guid::default()),
                     duplication_index: 0,
                     value: *import_index,
                 };

@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, Cursor, ErrorKind};
+use std::io::{self, BufReader, Cursor, ErrorKind};
 use std::path::Path;
 
 use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::types::PackageIndexTrait;
 use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use uuid::Uuid;
 
@@ -20,7 +21,7 @@ use unreal_mod_manager::unreal_asset::{
     uproperty::UProperty,
     Asset, Import,
 };
-use unreal_mod_manager::unreal_helpers::game_to_absolute;
+use unreal_mod_manager::unreal_helpers::{game_to_absolute, Guid};
 use unreal_mod_manager::unreal_mod_integrator::{
     helpers::{get_asset, write_asset},
     Error, IntegratorConfig,
@@ -34,14 +35,15 @@ use crate::AstroIntegratorConfig;
 pub(crate) fn handle_linked_actor_components(
     _data: &(),
     integrated_pak: &mut PakMemory,
-    game_paks: &mut Vec<PakReader<File>>,
-    mod_paks: &mut Vec<PakReader<File>>,
+    game_paks: &mut Vec<PakReader<BufReader<File>>>,
+    mod_paks: &mut Vec<PakReader<BufReader<File>>>,
     linked_actors_maps: &Vec<serde_json::Value>,
 ) -> Result<(), Error> {
     let actor_asset = Asset::new(
         Cursor::new(ACTOR_TEMPLATE_ASSET.to_vec()),
         Some(Cursor::new(ACTOR_TEMPLATE_EXPORT.to_vec())),
         EngineVersion::VER_UE4_23,
+        None,
     )
     .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
 
@@ -95,7 +97,7 @@ pub(crate) fn handle_linked_actor_components(
                         let import = asset
                             .get_import(normal_export.base_export.class_index)
                             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Import not found"))?;
-                        match import.object_name.get_content().as_str() {
+                        match import.object_name.get_owned_content().as_str() {
                             "BlueprintGeneratedClass" => actor_index = Some(i),
                             "SimpleConstructionScript" => simple_construction_script = Some(i),
                             _ => {}
@@ -229,8 +231,7 @@ pub(crate) fn handle_linked_actor_components(
                 .push(PackageIndex::new(component_export_index));
 
             let mut component_gen_variable = gen_variable.clone();
-            let mut component_gen_variable_base_export =
-                component_gen_variable.get_base_export_mut();
+            let component_gen_variable_base_export = component_gen_variable.get_base_export_mut();
             component_gen_variable_base_export.outer_index = PackageIndex::new(actor);
             component_gen_variable_base_export.class_index = blueprint_generated_class_import;
             component_gen_variable_base_export.template_index = default_import;
@@ -243,13 +244,13 @@ pub(crate) fn handle_linked_actor_components(
             component_gen_variable_base_export.object_name =
                 asset.add_fname(&(String::from(component) + "_GEN_VARIABLE"));
 
-            let mut component_gen_variable_normal_export =
+            let component_gen_variable_normal_export =
                 component_gen_variable.get_normal_export_mut().unwrap();
             asset.add_fname("BoolProperty");
             component_gen_variable_normal_export.properties = Vec::from([BoolProperty {
                 name: asset.add_fname("bAutoActivate"),
                 ancestry: Ancestry::default(),
-                property_guid: Some([0u8; 16]),
+                property_guid: Some(Guid::default()),
                 duplication_index: 0,
                 value: true,
             }
@@ -266,7 +267,7 @@ pub(crate) fn handle_linked_actor_components(
                 ObjectProperty {
                     name: asset.add_fname("ComponentClass"),
                     ancestry: Ancestry::default(),
-                    property_guid: Some([0u8; 16]),
+                    property_guid: Some(Guid::default()),
                     duplication_index: 0,
                     value: blueprint_generated_class_import,
                 }
@@ -274,7 +275,7 @@ pub(crate) fn handle_linked_actor_components(
                 ObjectProperty {
                     name: asset.add_fname("ComponentTemplate"),
                     ancestry: Ancestry::default(),
-                    property_guid: Some([0u8; 16]),
+                    property_guid: Some(Guid::default()),
                     duplication_index: 0,
                     value: PackageIndex::new(component_gen_variable_index),
                 }
@@ -283,7 +284,7 @@ pub(crate) fn handle_linked_actor_components(
                     name: asset.add_fname("VariableGuid"),
                     ancestry: Ancestry::default(),
                     struct_type: Some(asset.add_fname("Guid")),
-                    struct_guid: Some([0u8; 16]),
+                    struct_guid: Some(Guid::default()),
                     property_guid: None,
                     duplication_index: 0,
                     serialize_none: true,
@@ -292,7 +293,7 @@ pub(crate) fn handle_linked_actor_components(
                         ancestry: Ancestry::default(),
                         property_guid: None,
                         duplication_index: 0,
-                        value: Uuid::new_v4().into_bytes(),
+                        value: Guid::from(Uuid::new_v4().into_bytes()),
                     }
                     .into()]),
                 }
@@ -331,7 +332,7 @@ pub(crate) fn handle_linked_actor_components(
             let mut last_scs_node_index = 0;
             for export in &asset.asset_data.exports {
                 let object_name = &export.get_base_export().object_name;
-                if object_name.get_content() == "SCS_Node"
+                if object_name.get_content(|e| e == "SCS_Node")
                     && last_scs_node_index < object_name.get_number()
                 {
                     last_scs_node_index = object_name.get_number();
@@ -364,7 +365,7 @@ pub(crate) fn handle_linked_actor_components(
 
             for property in &mut simple_construction_script_export.properties {
                 if let Some(array_property) = cast!(Property, ArrayProperty, property) {
-                    let name = array_property.name.get_content();
+                    let name = array_property.name.get_owned_content();
                     let name = name.as_str();
                     if name == "AllNodes" || name == "RootNodes" {
                         let mut last_index = 0;

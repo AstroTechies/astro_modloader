@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, ErrorKind};
+use std::io::{self, BufReader, ErrorKind};
 use std::path::Path;
 
 use unreal_mod_manager::unreal_asset::properties::object_property::TopLevelAssetPath;
-use unreal_mod_manager::unreal_asset::reader::archive_trait::ArchiveTrait;
+use unreal_mod_manager::unreal_asset::types::PackageIndexTrait;
 use unreal_mod_manager::unreal_asset::unversioned::ancestry::Ancestry;
 use unreal_mod_manager::unreal_asset::{
     cast,
@@ -30,8 +30,8 @@ use crate::AstroIntegratorConfig;
 pub(crate) fn handle_item_list_entries(
     _data: &(),
     integrated_pak: &mut PakMemory,
-    game_paks: &mut Vec<PakReader<File>>,
-    mod_paks: &mut Vec<PakReader<File>>,
+    game_paks: &mut Vec<PakReader<BufReader<File>>>,
+    mod_paks: &mut Vec<PakReader<BufReader<File>>>,
     item_list_entires_maps: &Vec<serde_json::Value>,
 ) -> Result<(), Error> {
     let mut new_items = HashMap::new();
@@ -91,7 +91,7 @@ pub(crate) fn handle_item_list_entries(
                             if normal_export.base_export.class_index.is_import() {
                                 if asset
                                     .get_import(normal_export.base_export.class_index)
-                                    .map(|e| e.object_name.get_content() != export_name)
+                                    .map(|e| e.object_name.get_content(|e| e != export_name))
                                     .unwrap_or(true)
                                 {
                                     continue;
@@ -101,7 +101,7 @@ pub(crate) fn handle_item_list_entries(
                             }
                         }
                         if let Some(array_property) = cast!(Property, ArrayProperty, property) {
-                            if array_property.name.get_content() == arr_name {
+                            if array_property.name.get_content(|e| e == arr_name) {
                                 item_types_property
                                     .entry(entry_name.clone())
                                     .or_insert_with(Vec::new)
@@ -117,7 +117,7 @@ pub(crate) fn handle_item_list_entries(
                                                     "Invalid array_property",
                                                 )
                                             })?
-                                            .get_content(),
+                                            .get_owned_content(),
                                     ));
                             }
                         }
