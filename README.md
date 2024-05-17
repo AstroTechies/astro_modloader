@@ -13,9 +13,9 @@ page](https://github.com/AstroTechies/astro_modloader/releases/latest), below th
 
 Pre-built binaries are not yet dsitributed for Linux. To build the modloader yourself on Linux:
 
-- Use your distribution's package manager to install `rustup`, and `git`
+- Use your distribution's package manager to install `rustup` and `git`,
 - Use `rustup` to install the Rust programming language,
-- If `rustup` doesn't install it for you, install `build-essential` or your distro's equivalent,
+- If `rustup` didn't install it for you, install `build-essential` or your distro's equivalent,
 - Use `cargo` to install `cargo-about`,
 - Use `git` to clone the modloader's repository,
 - Then run the following commands in the root of the repository:
