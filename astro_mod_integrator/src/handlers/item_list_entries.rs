@@ -26,7 +26,7 @@ use unreal_mod_manager::unreal_pak::{PakMemory, PakReader};
 
 use crate::AstroIntegratorConfig;
 
-#[allow(clippy::ptr_arg)]
+#[allow(clippy::assigning_clones, clippy::ptr_arg)]
 pub(crate) fn handle_item_list_entries(
     _data: &(),
     integrated_pak: &mut PakMemory,
@@ -104,7 +104,7 @@ pub(crate) fn handle_item_list_entries(
                             if array_property.name.get_content(|e| e == arr_name) {
                                 item_types_property
                                     .entry(entry_name.clone())
-                                    .or_insert_with(Vec::new)
+                                    .or_default()
                                     .push((
                                         i,
                                         j,
