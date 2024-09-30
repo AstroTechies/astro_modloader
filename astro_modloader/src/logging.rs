@@ -3,14 +3,14 @@ use std::io::prelude::*;
 use std::sync::OnceLock;
 
 use colored::*;
-use log::{Level, LevelFilter, Metadata, Record, SetLoggerError};
+use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
 #[derive(Debug)]
 struct SimpleLogger {
     file: fs::File,
 }
 
-impl log::Log for SimpleLogger {
+impl Log for SimpleLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
         metadata.level() <= Level::Trace
     }
@@ -63,12 +63,14 @@ impl log::Log for SimpleLogger {
         }
     }
 
-    fn flush(&self) {}
+    fn flush(&self) {
+        (&self.file).flush().unwrap()
+    }
 }
 
-pub fn init() -> Result<(), SetLoggerError> {
+fn get_logger() -> &'static SimpleLogger {
     static LOGGER: OnceLock<SimpleLogger> = OnceLock::new();
-    let logger = LOGGER.get_or_init(|| SimpleLogger {
+    LOGGER.get_or_init(|| SimpleLogger {
         // open file
         file: fs::OpenOptions::new()
             .write(true)
@@ -76,7 +78,13 @@ pub fn init() -> Result<(), SetLoggerError> {
             .truncate(true)
             .open("modloader_log.txt")
             .unwrap(),
-    });
+    })
+}
 
-    log::set_logger(logger).map(|()| log::set_max_level(LevelFilter::Trace))
+pub fn init() -> Result<(), SetLoggerError> {
+    log::set_logger(get_logger()).map(|()| log::set_max_level(LevelFilter::Trace))
+}
+
+pub fn flush() {
+    get_logger().flush()
 }

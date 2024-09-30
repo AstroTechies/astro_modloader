@@ -246,4 +246,6 @@ fn main() {
     let config = AstroGameConfig;
 
     unreal_mod_manager::run(config);
+
+    logging::flush();
 }
