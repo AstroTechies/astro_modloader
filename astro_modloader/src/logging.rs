@@ -1,11 +1,14 @@
 use std::fs;
 use std::io::prelude::*;
+use std::sync::OnceLock;
 
 use colored::*;
 use log::{Level, LevelFilter, Metadata, Record, SetLoggerError};
 
 #[derive(Debug)]
-struct SimpleLogger;
+struct SimpleLogger {
+    file: fs::File,
+}
 
 impl log::Log for SimpleLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
@@ -34,58 +37,46 @@ impl log::Log for SimpleLogger {
                 };
 
                 println!(
-                    "{}{:<5} {}:{}{} {}",
+                    "{}{level:<5} {file_path}:{}{} {}",
                     "[".truecolor(100, 100, 100),
-                    level,
-                    file_path,
                     record.line().unwrap_or(0),
                     "]".truecolor(100, 100, 100),
                     record.args()
                 );
             }
 
-            // we need unsafe to write to a global variable
-            unsafe {
-                let level = match record.level() {
-                    Level::Error => "ERROR",
-                    Level::Warn => "WARN",
-                    Level::Info => "INFO",
-                    Level::Debug => "DEBUG",
-                    Level::Trace => "TRACE",
-                };
+            let level = match record.level() {
+                Level::Error => "ERROR",
+                Level::Warn => "WARN",
+                Level::Info => "INFO",
+                Level::Debug => "DEBUG",
+                Level::Trace => "TRACE",
+            };
 
-                writeln!(
-                    LOG_FILE.as_ref().unwrap(),
-                    "[{:<5} {}:{}] {}",
-                    level,
-                    file_path,
-                    record.line().unwrap_or(0),
-                    record.args()
-                )
-                .unwrap();
-            }
+            writeln!(
+                &self.file,
+                "[{level:<5} {file_path}:{}] {}",
+                record.line().unwrap_or(0),
+                record.args()
+            )
+            .unwrap();
         }
     }
 
     fn flush(&self) {}
 }
 
-static LOGGER: SimpleLogger = SimpleLogger;
-static mut LOG_FILE: Option<fs::File> = None;
-
 pub fn init() -> Result<(), SetLoggerError> {
-    // open file
-    // unsafe because I'm too lazy to properly handle the file
-    unsafe {
-        LOG_FILE = Some(
-            fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .open("modloader_log.txt")
-                .unwrap(),
-        );
-    }
+    static LOGGER: OnceLock<SimpleLogger> = OnceLock::new();
+    let logger = LOGGER.get_or_init(|| SimpleLogger {
+        // open file
+        file: fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open("modloader_log.txt")
+            .unwrap(),
+    });
 
-    log::set_logger(&LOGGER).map(|()| log::set_max_level(LevelFilter::Trace))
+    log::set_logger(logger).map(|()| log::set_max_level(LevelFilter::Trace))
 }
