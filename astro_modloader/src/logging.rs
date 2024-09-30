@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::prelude::*;
+use std::io::{prelude::*, BufWriter};
 use std::sync::{Mutex, OnceLock};
 
 use colored::*;
@@ -7,11 +7,17 @@ use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
 #[derive(Debug)]
 struct SimpleLogger {
-    file: Mutex<fs::File>,
+    file: Mutex<BufWriter<fs::File>>,
 }
 
 impl SimpleLogger {
-    fn lock<T>(&self, f: impl FnOnce(&mut fs::File) -> T) -> T {
+    fn new(file: fs::File) -> Self {
+        SimpleLogger {
+            file: Mutex::new(BufWriter::new(file)),
+        }
+    }
+
+    fn lock<T>(&self, f: impl FnOnce(&mut BufWriter<fs::File>) -> T) -> T {
         let mut guard = match self.file.lock() {
             Ok(guard) => guard,
             Err(err) => err.into_inner(),
@@ -83,16 +89,15 @@ impl Log for SimpleLogger {
 
 fn get_logger() -> &'static SimpleLogger {
     static LOGGER: OnceLock<SimpleLogger> = OnceLock::new();
-    LOGGER.get_or_init(|| SimpleLogger {
-        // open file
-        file: Mutex::new(
+    LOGGER.get_or_init(|| {
+        SimpleLogger::new(
             fs::OpenOptions::new()
                 .write(true)
                 .create(true)
                 .truncate(true)
                 .open("modloader_log.txt")
                 .unwrap(),
-        ),
+        )
     })
 }
 
