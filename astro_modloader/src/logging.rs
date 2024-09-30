@@ -1,13 +1,24 @@
 use std::fs;
 use std::io::prelude::*;
-use std::sync::OnceLock;
+use std::sync::{Mutex, OnceLock};
 
 use colored::*;
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
 #[derive(Debug)]
 struct SimpleLogger {
-    file: fs::File,
+    file: Mutex<fs::File>,
+}
+
+impl SimpleLogger {
+    fn lock<T>(&self, f: impl FnOnce(&mut fs::File) -> T) -> T {
+        let mut guard = match self.file.lock() {
+            Ok(guard) => guard,
+            Err(err) => err.into_inner(),
+        };
+
+        f(&mut guard)
+    }
 }
 
 impl Log for SimpleLogger {
@@ -53,18 +64,20 @@ impl Log for SimpleLogger {
                 Level::Trace => "TRACE",
             };
 
-            writeln!(
-                &self.file,
-                "[{level:<5} {file_path}:{}] {}",
-                record.line().unwrap_or(0),
-                record.args()
-            )
+            self.lock(|file| {
+                writeln!(
+                    file,
+                    "[{level:<5} {file_path}:{}] {}",
+                    record.line().unwrap_or(0),
+                    record.args()
+                )
+            })
             .unwrap();
         }
     }
 
     fn flush(&self) {
-        (&self.file).flush().unwrap()
+        self.lock(|file| file.flush()).unwrap()
     }
 }
 
@@ -72,12 +85,14 @@ fn get_logger() -> &'static SimpleLogger {
     static LOGGER: OnceLock<SimpleLogger> = OnceLock::new();
     LOGGER.get_or_init(|| SimpleLogger {
         // open file
-        file: fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open("modloader_log.txt")
-            .unwrap(),
+        file: Mutex::new(
+            fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open("modloader_log.txt")
+                .unwrap(),
+        ),
     })
 }
 
