@@ -7,6 +7,7 @@ use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
 #[derive(Debug)]
 struct SimpleLogger {
+    // Synchronize log entries
     file: Mutex<BufWriter<fs::File>>,
 }
 
@@ -18,6 +19,7 @@ impl SimpleLogger {
     }
 
     fn lock<T>(&self, f: impl FnOnce(&mut BufWriter<fs::File>) -> T) -> T {
+        // Ignore log mutex poison
         let mut guard = match self.file.lock() {
             Ok(guard) => guard,
             Err(err) => err.into_inner(),
@@ -91,6 +93,7 @@ fn get_logger() -> &'static SimpleLogger {
     static LOGGER: OnceLock<SimpleLogger> = OnceLock::new();
     LOGGER.get_or_init(|| {
         SimpleLogger::new(
+            // Open file
             fs::OpenOptions::new()
                 .write(true)
                 .create(true)
