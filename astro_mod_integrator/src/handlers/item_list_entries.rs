@@ -41,26 +41,44 @@ pub(crate) fn handle_item_list_entries(
             .as_object()
             .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid item_list_entries"))?;
 
+        // we duplicate /Game/Items/ItemTypes/MasterItemList entries into /Game/Items/ItemTypes/BaseGameInitialKnownItemList, if the latter list is not specified
+        // this provides backwards compatibility for older mods
+        // this can just be suppressed by specifying an entry for /Game/Items/ItemTypes/BaseGameInitialKnownItemList in metadata
+        let exists_bgikil = item_list_entries_map.contains_key("/Game/Items/ItemTypes/BaseGameInitialKnownItemList");
+
         for (name, item_list_entries) in item_list_entries_map {
             let item_list_entries = item_list_entries
                 .as_object()
                 .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid item_list_entries"))?;
-            let new_items_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new);
 
-            for (item_name, entries) in item_list_entries {
-                let entries = entries
-                    .as_array()
-                    .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid item_list_entries"))?;
+            {
+                let new_items_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new);
 
-                let new_items_entry_map = new_items_entry
-                    .entry(item_name.clone())
-                    .or_insert_with(Vec::new);
-                for entry in entries {
-                    let entry = entry.as_str().ok_or_else(|| {
-                        io::Error::new(ErrorKind::Other, "Invalid item_list_entries")
-                    })?;
-                    new_items_entry_map.push(String::from(entry));
+                for (item_name, entries) in item_list_entries {
+                    let entries = entries
+                        .as_array()
+                        .ok_or_else(|| io::Error::new(ErrorKind::Other, "Invalid item_list_entries"))?;
+    
+                    let new_items_entry_map = new_items_entry
+                        .entry(item_name.clone())
+                        .or_insert_with(Vec::new);
+                    for entry in entries {
+                        let entry = entry.as_str().ok_or_else(|| {
+                            io::Error::new(ErrorKind::Other, "Invalid item_list_entries")
+                        })?;
+                        new_items_entry_map.push(String::from(entry));
+                    }
                 }
+            }
+
+            // duplicate to BaseGameInitialKnownItemList appropriately, if applicable
+            if name == "/Game/Items/ItemTypes/MasterItemList" && !exists_bgikil {
+                let orig_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new).clone();
+
+                new_items
+                    .entry(String::from("/Game/Items/ItemTypes/BaseGameInitialKnownItemList"))
+                    .or_insert_with(HashMap::new)
+                    .extend(orig_entry);
             }
         }
     }
