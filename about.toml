@@ -11,7 +11,8 @@ accepted = [
     "CC0-1.0",
     "MPL-2.0",
     "BSD-3-Clause",
-    "ISC"
+    "ISC",
+    "Unicode-3.0"
 ]
 
 [unreal_asset.clarify]
