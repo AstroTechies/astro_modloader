@@ -2,7 +2,7 @@
 members = ["astro_mod_integrator", "astro_modloader"]
 
 [workspace.package]
-version = "0.1.12"
+version = "0.1.13"
 authors = ["AstroTechies, localcc, konsti219"]
 description = "Astroneer Modloader"
 
