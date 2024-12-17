@@ -10,8 +10,8 @@ lazy_static! {
     static ref GAME_REGEX: Regex = Regex::new(r"^/Game/").unwrap();
 }
 
-pub(crate) static MAP_PATHS: [&str; 2] = [
+pub(crate) static MAP_PATHS: [&str; 3] = [
     "Astro/Content/Maps/Staging_T2.umap",
     "Astro/Content/Maps/Staging_T2_PackedPlanets_Switch.umap",
-    //"Astro/Content/Maps/TutorialMoon_Prototype_v2.umap", // Tutorial not integrated for performance
+    "Astro/Content/U32_Expansion/U32_Expansion.umap"
 ];
