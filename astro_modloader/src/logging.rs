@@ -45,8 +45,8 @@ impl Log for SimpleLogger {
                 None => "<unknown>",
             };
 
-            // if it's from a dependency only log debug and above, else everything
-            if !record.file().unwrap_or("").contains(".cargo") || record.level() <= Level::Debug {
+            // just log debug and above, as otherwise logs are far, far too verbose
+            if record.level() <= Level::Debug {
                 let level = match record.level() {
                     Level::Error => "ERROR".red(),
                     Level::Warn => "WARN".yellow(),
@@ -62,25 +62,17 @@ impl Log for SimpleLogger {
                     "]".truecolor(100, 100, 100),
                     record.args()
                 );
+
+                self.lock(|file| {
+                    writeln!(
+                        file,
+                        "[{level:<5} {file_path}:{}] {}",
+                        record.line().unwrap_or(0),
+                        record.args()
+                    )
+                })
+                .unwrap();
             }
-
-            let level = match record.level() {
-                Level::Error => "ERROR",
-                Level::Warn => "WARN",
-                Level::Info => "INFO",
-                Level::Debug => "DEBUG",
-                Level::Trace => "TRACE",
-            };
-
-            self.lock(|file| {
-                writeln!(
-                    file,
-                    "[{level:<5} {file_path}:{}] {}",
-                    record.line().unwrap_or(0),
-                    record.args()
-                )
-            })
-            .unwrap();
         }
     }
 
