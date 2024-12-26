@@ -47,16 +47,23 @@ impl Log for SimpleLogger {
 
             // just log debug and above, as otherwise logs are far, far too verbose
             if record.level() <= Level::Debug {
-                let level = match record.level() {
+                let level_colored = match record.level() {
                     Level::Error => "ERROR".red(),
                     Level::Warn => "WARN".yellow(),
                     Level::Info => "INFO".green(),
                     Level::Debug => "DEBUG".cyan(),
                     Level::Trace => "TRACE".blue(),
                 };
+                let level = match record.level() {
+                    Level::Error => "ERROR",
+                    Level::Warn => "WARN",
+                    Level::Info => "INFO",
+                    Level::Debug => "DEBUG",
+                    Level::Trace => "TRACE",
+                };
 
                 println!(
-                    "{}{level:<5} {file_path}:{}{} {}",
+                    "{}{level_colored:<5} {file_path}:{}{} {}",
                     "[".truecolor(100, 100, 100),
                     record.line().unwrap_or(0),
                     "]".truecolor(100, 100, 100),
