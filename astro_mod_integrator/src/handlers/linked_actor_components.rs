@@ -1,3 +1,5 @@
+#![allow(clippy::io_other_error)]
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Cursor, ErrorKind};
@@ -12,13 +14,14 @@ use unreal_mod_manager::unreal_asset::{
     cast,
     engine_version::EngineVersion,
     exports::{Export, ExportBaseTrait, ExportNormalTrait},
-    flags::EObjectFlags,
+    enums::{EArrayDim, ELifetimeCondition},
+    flags::{EObjectFlags, EPropertyFlags},
     properties::{
         guid_property::GuidProperty, int_property::BoolProperty, object_property::ObjectProperty,
         str_property::NameProperty, struct_property::StructProperty, Property, PropertyDataTrait,
     },
     types::PackageIndex,
-    uproperty::UProperty,
+    fproperty::{FGenericProperty, FObjectProperty},
     Asset, Import,
 };
 use unreal_mod_manager::unreal_helpers::{game_to_absolute, Guid};
@@ -42,15 +45,15 @@ pub(crate) fn handle_linked_actor_components(
     let actor_asset = Asset::new(
         Cursor::new(ACTOR_TEMPLATE_ASSET.to_vec()),
         Some(Cursor::new(ACTOR_TEMPLATE_EXPORT.to_vec())),
-        EngineVersion::VER_UE4_23,
+        EngineVersion::VER_UE4_27,
         None,
     )
     .map_err(|e| io::Error::new(ErrorKind::Other, e.to_string()))?;
 
     let gen_variable = cast!(Export, NormalExport, &actor_asset.asset_data.exports[0])
         .expect("Corrupted ActorTemplate");
-    let component_export = cast!(Export, PropertyExport, &actor_asset.asset_data.exports[1])
-        .expect("Corrupted ActorTemplate");
+    //let component_export = cast!(Export, PropertyExport, &actor_asset.asset_data.exports[1])
+    //    .expect("Corrupted ActorTemplate");
     let scs_export = cast!(Export, NormalExport, &actor_asset.asset_data.exports[2])
         .expect("Corrupted ActorTemplate");
 
@@ -83,7 +86,7 @@ pub(crate) fn handle_linked_actor_components(
             game_paks,
             mod_paks,
             &name,
-            EngineVersion::VER_UE4_23,
+            EngineVersion::VER_UE4_27,
         )?;
 
         for component_path_raw in components {
@@ -124,13 +127,14 @@ pub(crate) fn handle_linked_actor_components(
 
             let script_core_uobject = asset.add_fname("/Script/CoreUObject");
             let name_class = asset.add_fname("Class");
-            let object_property = asset.add_fname("ObjectProperty");
-            let default_object_property = asset.add_fname("Default__ObjectProperty");
+            //let object_property = asset.add_fname("ObjectProperty");
+            //let default_object_property = asset.add_fname("Default__ObjectProperty");
             let name_scs_node = asset.add_fname("SCS_Node");
             let script_engine = asset.add_fname("/Script/Engine");
             let default_scs_node = asset.add_fname("Default__SCS_Node");
 
-            let class_object_property_import = asset
+            // 4.23
+            /*let class_object_property_import = asset
                 .find_import_no_index(&script_core_uobject, &name_class, &object_property)
                 .expect("No class object property import");
 
@@ -140,7 +144,7 @@ pub(crate) fn handle_linked_actor_components(
                     &object_property,
                     &default_object_property,
                 )
-                .expect("No default objectproperty");
+                .expect("No default objectproperty");*/
 
             let scs_node_import = asset
                 .find_import_no_index(&script_core_uobject, &name_class, &name_scs_node)
@@ -193,12 +197,13 @@ pub(crate) fn handle_linked_actor_components(
             };
             let default_import = asset.add_import(default_import);
 
-            let mut component_export = component_export.clone();
+            // 4.23
+            /*let mut component_export = component_export.clone();
             let component_object_property =
                 cast!(UProperty, UObjectProperty, &mut component_export.property)
                     .ok_or_else(|| io::Error::new(ErrorKind::Other, "Corrupted starter pak"))?;
             component_object_property.property_class = blueprint_generated_class_import;
-
+            
             let component_base_export = component_export.get_base_export_mut();
             component_base_export.object_name = asset.add_fname(component);
             component_base_export.create_before_serialization_dependencies =
@@ -213,6 +218,7 @@ pub(crate) fn handle_linked_actor_components(
             asset.asset_data.exports.push(component_export.into());
 
             let component_export_index = asset.asset_data.exports.len() as i32;
+
             let actor_export = cast!(
                 Export,
                 ClassExport,
@@ -228,7 +234,39 @@ pub(crate) fn handle_linked_actor_components(
                 .normal_export
                 .base_export
                 .serialization_before_serialization_dependencies
-                .push(PackageIndex::new(component_export_index));
+                .push(PackageIndex::new(component_export_index));*/
+
+            // 4.27
+            let fname_object_property = asset.add_fname("ObjectProperty");
+            let fname_none = asset.add_fname("None");
+            let component_no_c = String::from(component);
+            let fprop_generic = FGenericProperty {
+                serialized_type: Some(fname_object_property),
+                name: asset.add_fname(&component_no_c),
+                array_dim: EArrayDim::TArray,
+                element_size: 8,
+                property_flags: EPropertyFlags::CPF_BLUEPRINT_VISIBLE | EPropertyFlags::CPF_INSTANCED_REFERENCE | EPropertyFlags::CPF_NON_TRANSACTIONAL,
+                rep_index: 0,
+                rep_notify_func: fname_none,
+                blueprint_replication_condition: ELifetimeCondition::CondNone,
+                flags: EObjectFlags::RF_PUBLIC | EObjectFlags::RF_LOAD_COMPLETED
+            };
+            let fprop = FObjectProperty {
+                property_class: blueprint_generated_class_import,
+                generic_property: fprop_generic
+            };
+
+            let actor_export = cast!(
+                Export,
+                ClassExport,
+                &mut asset.asset_data.exports[actor_index]
+            )
+            .expect("Corrupted memory");
+
+            actor_export
+                .struct_export
+                .loaded_properties
+                .push(fprop.into());
 
             let mut component_gen_variable = gen_variable.clone();
             let component_gen_variable_base_export = component_gen_variable.get_base_export_mut();

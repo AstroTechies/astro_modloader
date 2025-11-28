@@ -1,3 +1,5 @@
+#![allow(clippy::io_other_error)]
+
 use std::fs::File;
 use std::io::{self, BufReader, ErrorKind};
 use std::path::Path;
@@ -35,7 +37,7 @@ pub(crate) fn handle_mission_trailheads(
             game_paks,
             mod_paks,
             &String::from(map_path),
-            EngineVersion::VER_UE4_23,
+            EngineVersion::VER_UE4_27,
         )?;
 
         let mut trailheads = Vec::new();

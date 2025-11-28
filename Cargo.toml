@@ -2,15 +2,15 @@
 members = ["astro_mod_integrator", "astro_modloader"]
 
 [workspace.package]
-version = "0.1.14"
+version = "0.1.15"
 authors = ["AstroTechies, localcc, konsti219"]
 description = "Astroneer Modloader"
 
 [workspace.dependencies]
 astro_mod_integrator = { path = "./astro_mod_integrator" }
 
-unreal_mod_manager = { rev = "c636ad4e30c0f048f931d03a803d233c06dbf5d8", git = "https://github.com/AstroTechies/unrealmodding", features = [
-    "ue4_23",
+unreal_mod_manager = { rev = "f4df5d8e75b1e184832384d1865f0b696b90a614", git = "https://github.com/AstroTechies/unrealmodding", features = [
+    "ue4_27",
     "cpp_loader",
 ] }
 
