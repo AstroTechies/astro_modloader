@@ -179,6 +179,7 @@ where
             Box::new(MsStoreInstallManager::new(
                 "SystemEraSoftworks",
                 "ASTRONEER",
+                "AppSystemEraSoftworks29415440E1269Shipping",
                 "Astro",
             )),
         );

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use unreal_mod_manager::unreal_asset::engine_version::EngineVersion;
-use unreal_mod_manager::unreal_helpers::game_to_absolute;
+//use unreal_mod_manager::unreal_helpers::game_to_absolute;
 use unreal_mod_manager::unreal_mod_integrator::{
     BakedMod, Error, HandlerFn, IntegratorConfig, IntegratorMod,
 };
@@ -20,7 +20,7 @@ pub struct AstroIntegratorConfig;
 
 lazy_static! {
     static ref FILE_REFS: HashMap<String, &'static [u8]> = HashMap::from([
-        (
+        /*(
             game_to_absolute(
                 AstroIntegratorConfig::GAME_NAME,
                 "/Game/Integrator/NotificationActor.uasset"
@@ -35,7 +35,7 @@ lazy_static! {
             )
             .unwrap(),
             assets::ALERT_MOD_NOTIFICATION_ACTOR_EXPORT
-        ),
+        ),*/
     ]);
 }
 
@@ -84,5 +84,5 @@ impl<'data> IntegratorConfig<'data, (), Error> for AstroIntegratorConfig {
 
     const GAME_NAME: &'static str = "Astro";
     const INTEGRATOR_VERSION: &'static str = env!("CARGO_PKG_VERSION");
-    const ENGINE_VERSION: EngineVersion = EngineVersion::VER_UE4_23;
+    const ENGINE_VERSION: EngineVersion = EngineVersion::VER_UE4_27;
 }

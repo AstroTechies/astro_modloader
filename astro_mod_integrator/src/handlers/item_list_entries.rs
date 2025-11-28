@@ -45,6 +45,10 @@ pub(crate) fn handle_item_list_entries(
         // this provides backwards compatibility for older mods
         // this can just be suppressed by specifying an entry for /Game/Items/ItemTypes/BaseGameInitialKnownItemList in metadata
         let exists_bgikil = item_list_entries_map.contains_key("/Game/Items/ItemTypes/BaseGameInitialKnownItemList");
+        let exists_bgikil2 = item_list_entries_map.contains_key("/Game/U32_Expansion/Items/GW_InitialKnownItemList");
+        let exists_bgikil3 = item_list_entries_map.contains_key("/Game/Items/ItemLists/BackpackPrinterItemList_GW");
+        let exists_bgikil4 = item_list_entries_map.contains_key("/Game/Items/ItemLists/T1PrinterItemList_GW");
+        let exists_bgikil5 = item_list_entries_map.contains_key("/Game/Items/ItemLists/T2PrinterItemList_GW");
 
         for (name, item_list_entries) in item_list_entries_map {
             let item_list_entries = item_list_entries
@@ -80,6 +84,38 @@ pub(crate) fn handle_item_list_entries(
                     .or_insert_with(HashMap::new)
                     .extend(orig_entry);
             }
+            if name == "/Game/Items/ItemTypes/MasterItemList" && !exists_bgikil2 {
+                let orig_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new).clone();
+
+                new_items
+                    .entry(String::from("/Game/U32_Expansion/Items/GW_InitialKnownItemList"))
+                    .or_insert_with(HashMap::new)
+                    .extend(orig_entry);
+            }
+            if name == "/Game/Items/ItemLists/BackpackPrinterItemList" && !exists_bgikil3 {
+                let orig_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new).clone();
+
+                new_items
+                    .entry(String::from("/Game/Items/ItemLists/BackpackPrinterItemList_GW"))
+                    .or_insert_with(HashMap::new)
+                    .extend(orig_entry);
+            }
+            if name == "/Game/Items/ItemLists/T1PrinterItemList" && !exists_bgikil4 {
+                let orig_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new).clone();
+
+                new_items
+                    .entry(String::from("/Game/Items/ItemLists/T1PrinterItemList_GW"))
+                    .or_insert_with(HashMap::new)
+                    .extend(orig_entry);
+            }
+            if name == "/Game/Items/ItemLists/T2PrinterItemList" && !exists_bgikil5 {
+                let orig_entry = new_items.entry(name.clone()).or_insert_with(HashMap::new).clone();
+
+                new_items
+                    .entry(String::from("/Game/Items/ItemLists/T2PrinterItemList_GW"))
+                    .or_insert_with(HashMap::new)
+                    .extend(orig_entry);
+            }
         }
     }
 
@@ -91,7 +127,7 @@ pub(crate) fn handle_item_list_entries(
             game_paks,
             mod_paks,
             &asset_name,
-            EngineVersion::VER_UE4_23,
+            EngineVersion::VER_UE4_27,
         )?;
 
         let mut item_types_property: HashMap<String, Vec<(usize, usize, String)>> = HashMap::new();

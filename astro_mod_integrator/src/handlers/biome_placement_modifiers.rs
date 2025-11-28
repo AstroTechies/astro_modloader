@@ -1,3 +1,5 @@
+#![allow(clippy::io_other_error)]
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, ErrorKind};
@@ -66,7 +68,7 @@ pub(crate) fn handle_biome_placement_modifiers(
             game_paks,
             mod_paks,
             &map_path.to_string(),
-            EngineVersion::VER_UE4_23,
+            EngineVersion::VER_UE4_27,
         )?;
 
         let mut voxel_exports = HashMap::new();
