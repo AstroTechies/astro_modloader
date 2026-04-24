@@ -2,6 +2,12 @@
 
 A mod loader for Astroneer, rewritten in Rust.
 
+## Repository Status
+
+This repository is currently in "maintenance mode." New releases may be issued to fix major bugs and provide support for newer versions of the game, but issues related to new features or minor bugs are unlikely to be reviewed.
+
+To receive further information about other mod managers available for Astroneer, you may wish to visit the [astroneermodding.readthedocs.io](https://astroneermodding.readthedocs.io/en/latest/standards/metadatav2.html#compatibility) website.
+
 ## Installation
 
 ### Windows
