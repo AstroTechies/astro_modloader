@@ -29,7 +29,7 @@ jobs:
             - uses: Swatinem/rust-cache@v2
 
             - name: Install cargo-about
-              run: cargo install --locked cargo-about
+              run: cargo install --locked cargo-about --features="cli" 
 
             - uses: actions-rs/cargo@v1
               name: Unit test
