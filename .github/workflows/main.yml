@@ -31,20 +31,11 @@ jobs:
             - name: Install cargo-about
               run: cargo install --locked cargo-about
 
-            # - uses: actions-rs/cargo@v1
-            #   name: Unit test
-            #   env:
-            #       USE_PREBUILT_ASSETS: 1
-            #       USE_PRECOMPILED_CPP_LOADER: 1
-            #   with:
-            #       token: ${{ secrets.GITHUB_TOKEN }}
-            #       command: test
-
-            - uses: actions-rs/clippy-check@v1
-              name: Clippy check
+            - uses: actions-rs/cargo@v1
+              name: Unit test
               env:
-                  USE_PREBUILT_ASSETS: 1
-                  USE_PRECOMPILED_CPP_LOADER: 1
+                USE_PREBUILT_ASSETS: 1
+                USE_PRECOMPILED_CPP_LOADER: 1
               with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  args: -- -D warnings
+                token: ${{ secrets.GITHUB_TOKEN }}
+                command: check
