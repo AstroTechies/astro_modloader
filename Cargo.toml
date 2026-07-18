@@ -9,7 +9,7 @@ description = "Astroneer Modloader"
 [workspace.dependencies]
 astro_mod_integrator = { path = "./astro_mod_integrator" }
 
-unreal_mod_manager = { rev = "6d10fb3c78720517a2f3e3d61dcaad2ae729cad2", git = "https://github.com/AstroTechies/unrealmodding", features = [
+unreal_mod_manager = { rev = "79c6f34406e8c24dc79720b14f340eed7f8d6988", git = "https://github.com/AstroTechies/unrealmodding", features = [
     "ue4_27",
     "cpp_loader",
 ] }
