@@ -150,7 +150,7 @@ where
         GameBuild::try_from(&game_build_string).ok()
     }
 
-    const WINDOW_TITLE: &'static str = "Astroneer Modloader";
+    const WINDOW_TITLE: &'static str = "astro_modloader (Rust)";
     const CONFIG_DIR: &'static str = "AstroModLoader";
     const CRATE_VERSION: &'static str = cargo_crate_version!();
     const ABOUT_TEXT: &'static str = concat!(

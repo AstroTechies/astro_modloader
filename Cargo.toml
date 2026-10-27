@@ -4,7 +4,7 @@ members = ["astro_mod_integrator", "astro_modloader"]
 [workspace.package]
 version = "0.1.16"
 authors = ["AstroTechies, localcc, konsti219"]
-description = "Astroneer Modloader"
+description = "astro_modloader (Rust)"
 
 [workspace.dependencies]
 astro_mod_integrator = { path = "./astro_mod_integrator" }
